@@ -1,8 +1,8 @@
-package com.biblioteca.service;
+package com.example.Sistema_Biblioteca.service;
 
-import com.biblioteca.model.Usuario;
-import com.biblioteca.model.TipoUsuario;
-import com.biblioteca.repository.UsuarioRepository;
+import com.example.Sistema_Biblioteca.model.Usuario;
+import com.example.Sistema_Biblioteca.model.TipoUsuario;
+import com.example.Sistema_Biblioteca.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

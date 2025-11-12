@@ -1,7 +1,7 @@
-package com.biblioteca.service;
+package com.example.Sistema_Biblioteca.service;
 
-import com.biblioteca.model.Autor;
-import com.biblioteca.repository.AutorRepository;
+import com.example.Sistema_Biblioteca.model.Autor;
+import com.example.Sistema_Biblioteca.repository.AutorRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

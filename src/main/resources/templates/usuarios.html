@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestão de Usuários - Biblioteca</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+<header class="header">
+    <nav class="navbar">
+        <div class="logo">
+            <i class="fas fa-book"></i>
+            <span>Biblioteca Universitária</span>
+        </div>
+        <ul class="nav-links">
+            <li><a href="/"><i class="fas fa-home"></i> Início</a></li>
+            <li><a href="/livros"><i class="fas fa-book"></i> Livros</a></li>
+            <li><a href="/usuarios" class="active"><i class="fas fa-users"></i> Usuários</a></li>
+            <li><a href="/emprestimos"><i class="fas fa-exchange-alt"></i> Empréstimos</a></li>
+            <li><a href="/reservas"><i class="fas fa-calendar-check"></i> Reservas</a></li>
+            <li><a href="/relatorios"><i class="fas fa-chart-bar"></i> Relatórios</a></li>
+        </ul>
+    </nav>
+</header>
+
+<main class="container">
+    <!-- Cabeçalho com ações -->
+    <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <a href="/" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Voltar
+                </a>
+                <h2 style="margin: 0;"><i class="fas fa-users"></i> Gestão de Usuários</h2>
+            </div>
+            <a href="/usuarios/novo" class="btn btn-primary">
+                <i class="fas fa-user-plus"></i> Novo Usuário
+            </a>
+        </div>
+
+        <!-- Filtros -->
+        <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem;">
+            <input type="text" class="form-control" placeholder="Buscar por nome..." style="flex: 1; min-width: 200px;">
+            <select class="form-control" style="width: 200px;">
+                <option>Todos os Tipos</option>
+                <option>Aluno</option>
+                <option>Professor</option>
+                <option>Funcionário</option>
+            </select>
+            <button class="btn btn-primary">
+                <i class="fas fa-search"></i> Buscar
+            </button>
+        </div>
+    </div>
+
+    <!-- Lista de Usuários -->
+    <div class="card">
+        <h3><i class="fas fa-list"></i> Todos os Usuários</h3>
+        <div class="table-container">
+            <table>
+                <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>Matrícula</th>
+                    <th>Email</th>
+                    <th>Tipo</th>
+                    <th>Data Cadastro</th>
+                    <th>Empréstimos Ativos</th>
+                    <th>Status</th>
+                    <th>Ações</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="usuario : ${usuarios}">
+                    <td th:text="${usuario.nome}">Ana Pereira</td>
+                    <td th:text="${usuario.matricula}">2024001</td>
+                    <td th:text="${usuario.email}">ana.pereira@email.com</td>
+                    <td>
+                        <!-- CORREÇÃO AQUI: Expressão Thymeleaf corrigida -->
+                        <span class="status" th:classappend="${usuario.tipo.name() == 'ALUNO'} ? 'status-disponivel' : (${usuario.tipo.name() == 'PROFESSOR'} ? 'status-ativo' : 'status-emprestado')">
+                            <span th:text="${usuario.tipo}">ALUNO</span>
+                        </span>
+                    </td>
+                    <td th:text="${#temporals.format(usuario.dataCadastro, 'dd/MM/yyyy')}">01/11/2024</td>
+                    <td>
+                        <span th:text="${usuario.emprestimos != null ? usuario.emprestimos.?[status.name() == 'ATIVO'].size() : 0}">2</span>
+                    </td>
+                    <td>
+                        <span class="status status-ativo">Ativo</span>
+                    </td>
+                    <td>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <!-- Visualizar -->
+                            <a th:href="@{/usuarios/{id}(id=${usuario.id})}" class="btn btn-primary btn-sm">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <!-- Editar -->
+                            <a th:href="@{/usuarios/{id}/editar(id=${usuario.id})}" class="btn btn-success btn-sm">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <!-- Excluir -->
+                            <form th:action="@{/usuarios/{id}/excluir(id=${usuario.id})}" method="post" style="display: inline;">
+                                <button type="submit" class="btn btn-danger btn-sm"
+                                        onclick="return confirm('Tem certeza que deseja excluir este usuário?')">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                <tr th:if="${usuarios == null or usuarios.empty}">
+                    <td colspan="8" style="text-align: center;">
+                        <div class="loading">Nenhum usuário cadastrado</div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Estatísticas dos Usuários -->
+    <div class="cards-grid">
+        <div class="stat-card">
+            <i class="fas fa-users"></i>
+            <span class="stat-number" th:text="${totalUsuarios ?: '0'}">0</span>
+            <span class="stat-label">Total de Usuários</span>
+        </div>
+        <div class="stat-card">
+            <i class="fas fa-user-graduate"></i>
+            <span class="stat-number" th:text="${alunosCount ?: '0'}">0</span>
+            <span class="stat-label">Alunos</span>
+        </div>
+        <div class="stat-card">
+            <i class="fas fa-chalkboard-teacher"></i>
+            <span class="stat-number" th:text="${professoresCount ?: '0'}">0</span>
+            <span class="stat-label">Professores</span>
+        </div>
+        <div class="stat-card">
+            <i class="fas fa-user-tie"></i>
+            <span class="stat-number" th:text="${funcionariosCount ?: '0'}">0</span>
+            <span class="stat-label">Funcionários</span>
+        </div>
+    </div>
+</main>
+
+<footer class="footer">
+    <p>&copy; 2024 Sistema de Biblioteca Universitária</p>
+</footer>
+
+<script th:inline="javascript">
+    function confirmarExclusaoUsuario(id, nome) {
+        if (confirm('Tem certeza que deseja excluir o usuário "' + nome + '"?')) {
+            fetch('/api/usuarios/' + id, {
+                method: 'DELETE',
+            })
+            .then(response => {
+                if (response.ok) {
+                    alert('Usuário excluído com sucesso!');
+                    location.reload();
+                } else {
+                    response.text().then(text => {
+                        alert('Erro: ' + text);
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Erro ao excluir usuário.');
+            });
+        }
+    }
+
+    // Função para busca em tempo real
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.querySelector('input[placeholder="Buscar por nome..."]');
+        const tipoSelect = document.querySelector('select');
+        const searchButton = document.querySelector('.btn-primary');
+
+        function filtrarUsuarios() {
+            const termo = searchInput.value.toLowerCase();
+            const tipo = tipoSelect.value;
+            const linhas = document.querySelectorAll('tbody tr');
+
+            linhas.forEach(linha => {
+                const nome = linha.cells[0].textContent.toLowerCase();
+                const tipoUsuario = linha.cells[3].textContent;
+
+                const matchNome = nome.includes(termo);
+                const matchTipo = tipo === 'Todos os Tipos' || tipoUsuario === tipo;
+
+                if (matchNome && matchTipo) {
+                    linha.style.display = '';
+                } else {
+                    linha.style.display = 'none';
+                }
+            });
+        }
+
+        searchInput.addEventListener('input', filtrarUsuarios);
+        tipoSelect.addEventListener('change', filtrarUsuarios);
+        searchButton.addEventListener('click', filtrarUsuarios);
+    });
+
+    // Mostrar mensagens de sucesso/erro
+    document.addEventListener('DOMContentLoaded', function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const sucesso = urlParams.get('sucesso');
+        const erro = urlParams.get('error');
+
+        if (sucesso) {
+            alert('✅ ' + decodeURIComponent(sucesso));
+            // Remove o parâmetro da URL
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+
+        if (erro) {
+            alert('❌ ' + decodeURIComponent(erro));
+            // Remove o parâmetro da URL
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+    });
+</script>
+</body>
+</html>

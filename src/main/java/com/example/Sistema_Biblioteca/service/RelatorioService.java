@@ -1,10 +1,10 @@
-package com.biblioteca.service;
+package com.example.Sistema_Biblioteca.service;
 
-import com.biblioteca.model.Emprestimo;
-import com.biblioteca.model.Livro;
-import com.biblioteca.repository.EmprestimoRepository;
-import com.biblioteca.repository.LivroRepository;
-import com.biblioteca.repository.UsuarioRepository;
+import com.example.Sistema_Biblioteca.model.Emprestimo;
+import com.example.Sistema_Biblioteca.model.Livro;
+import com.example.Sistema_Biblioteca.repository.EmprestimoRepository;
+import com.example.Sistema_Biblioteca.repository.LivroRepository;
+import com.example.Sistema_Biblioteca.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Biblioteca - Início</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+<!-- Header -->
+<header class="header">
+    <nav class="navbar">
+        <div class="logo">
+            <i class="fas fa-book"></i>
+            <span>Biblioteca Universitária</span>
+        </div>
+        <ul class="nav-links">
+            <li><a href="/" class="active"><i class="fas fa-home"></i> Início</a></li>
+            <li><a href="/livros"><i class="fas fa-book"></i> Livros</a></li>
+            <li><a href="/usuarios"><i class="fas fa-users"></i> Usuários</a></li>
+            <li><a href="/emprestimos"><i class="fas fa-exchange-alt"></i> Empréstimos</a></li>
+            <li><a href="/reservas"><i class="fas fa-calendar-check"></i> Reservas</a></li>
+            <li><a href="/relatorios"><i class="fas fa-chart-bar"></i> Relatórios</a></li>
+        </ul>
+    </nav>
+</header>
+
+<!-- Conteúdo Principal -->
+<main class="container">
+    <!-- Estatísticas -->
+    <div class="cards-grid">
+        <div class="stat-card">
+            <i class="fas fa-book"></i>
+            <span class="stat-number" th:text="${totalLivros ?: '0'}">0</span>
+            <span class="stat-label">Total de Livros</span>
+        </div>
+        <div class="stat-card">
+            <i class="fas fa-users"></i>
+            <span class="stat-number" th:text="${totalUsuarios ?: '0'}">0</span>
+            <span class="stat-label">Usuários Cadastrados</span>
+        </div>
+        <div class="stat-card">
+            <i class="fas fa-exchange-alt"></i>
+            <span class="stat-number" th:text="${emprestimosAtivos ?: '0'}">0</span>
+            <span class="stat-label">Empréstimos Ativos</span>
+        </div>
+        <div class="stat-card">
+            <i class="fas fa-exclamation-triangle"></i>
+            <span class="stat-number" th:text="${emprestimosAtrasados ?: '0'}">0</span>
+            <span class="stat-label">Empréstimos Atrasados</span>
+        </div>
+    </div>
+
+    <!-- Ações Rápidas - CORREÇÃO AQUI -->
+    <div class="card">
+        <h2><i class="fas fa-bolt"></i> Ações Rápidas</h2>
+        <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+            <!-- CORREÇÃO: Use th:href com a sintaxe correta do Thymeleaf -->
+            <a th:href="@{/livros/novo}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Novo Livro
+            </a>
+            <a th:href="@{/usuarios/novo}" class="btn btn-primary">
+                <i class="fas fa-user-plus"></i> Novo Usuário
+            </a>
+            <a th:href="@{/emprestimos/novo}" class="btn btn-success">
+                <i class="fas fa-handshake"></i> Novo Empréstimo
+            </a>
+            <a th:href="@{/reservas/nova}" class="btn btn-success">
+                <i class="fas fa-calendar-plus"></i> Nova Reserva
+            </a>
+        </div>
+    </div>
+
+    <!-- Empréstimos Recentes -->
+    <div class="card">
+        <h2><i class="fas fa-clock"></i> Empréstimos Recentes</h2>
+        <div class="table-container">
+            <table>
+                <thead>
+                <tr>
+                    <th>Usuário</th>
+                    <th>Livro</th>
+                    <th>Data Empréstimo</th>
+                    <th>Devolução Prevista</th>
+                    <th>Status</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="emprestimo : ${ultimosEmprestimos}">
+                    <td th:text="${emprestimo.usuario.nome}">João Silva</td>
+                    <td th:text="${emprestimo.livro.titulo}">Java para Iniciantes</td>
+                    <td th:text="${#temporals.format(emprestimo.dataEmprestimo, 'dd/MM/yyyy')}">10/11/2024</td>
+                    <td th:text="${#temporals.format(emprestimo.dataDevolucaoPrevista, 'dd/MM/yyyy')}">24/11/2024</td>
+                    <td>
+                        <span class="status status-ativo" th:if="${emprestimo.status.name() == 'ATIVO'}">Ativo</span>
+                        <span class="status status-inativo" th:if="${emprestimo.status.name() == 'DEVOLVIDO'}">Devolvido</span>
+                        <span class="status status-emprestado" th:if="${emprestimo.status.name() == 'ATRASADO'}">Atrasado</span>
+                    </td>
+                </tr>
+                <tr th:if="${ultimosEmprestimos == null or ultimosEmprestimos.empty}">
+                    <td colspan="5" style="text-align: center;">Nenhum empréstimo recente</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Livros Populares -->
+    <div class="card">
+        <h2><i class="fas fa-chart-line"></i> Livros Mais Emprestados</h2>
+        <div class="table-container">
+            <table>
+                <thead>
+                <tr>
+                    <th>Livro</th>
+                    <th>Autor</th>
+                    <th>Total Empréstimos</th>
+                    <th>Disponível</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="livro : ${livrosPopulares}">
+                    <td th:text="${livro.titulo}">Java para Iniciantes</td>
+                    <td th:text="${#strings.listJoin(livro.autores.![nome], ', ')}">João Silva</td>
+                    <td th:text="${livro.emprestimos.size()}">15</td>
+                    <td>
+                                <span class="status status-disponivel" th:if="${livro.exemplaresDisponiveis > 0}">
+                                    <i class="fas fa-check"></i> Disponível
+                                </span>
+                        <span class="status status-emprestado" th:if="${livro.exemplaresDisponiveis == 0}">
+                                    <i class="fas fa-times"></i> Indisponível
+                                </span>
+                    </td>
+                </tr>
+                <tr th:if="${livrosPopulares == null or livrosPopulares.empty}">
+                    <td colspan="4" style="text-align: center;">Nenhum dado disponível</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
+
+<!-- Footer -->
+<footer class="footer">
+    <p>&copy; 2024 Sistema de Biblioteca Universitária. Desenvolvido com Spring Boot.</p>
+    <p>
+        <a href="/h2-console" target="_blank" style="color: #3498db; text-decoration: none;">
+            <i class="fas fa-database"></i> Banco de Dados H2
+        </a>
+    </p>
+</footer>
+
+<script th:src="@{/js/app.js}"></script>
+</body>
+</html>

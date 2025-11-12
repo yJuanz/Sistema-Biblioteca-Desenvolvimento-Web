@@ -1,7 +1,7 @@
-package com.biblioteca.service;
+package com.example.Sistema_Biblioteca.service;
 
-import com.biblioteca.model.Editora;
-import com.biblioteca.repository.EditoraRepository;
+import com.example.Sistema_Biblioteca.model.Editora;
+import com.example.Sistema_Biblioteca.repository.EditoraRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

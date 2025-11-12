@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${usuario != null} ? 'Editar Usuário - Biblioteca' : 'Novo Usuário - Biblioteca'">Novo Usuário - Biblioteca</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+<header class="header">
+    <nav class="navbar">
+        <div class="logo">
+            <i class="fas fa-book"></i>
+            <span>Biblioteca Universitária</span>
+        </div>
+        <ul class="nav-links">
+            <li><a href="/"><i class="fas fa-home"></i> Início</a></li>
+            <li><a href="/livros"><i class="fas fa-book"></i> Livros</a></li>
+            <li><a href="/usuarios" class="active"><i class="fas fa-users"></i> Usuários</a></li>
+            <li><a href="/emprestimos"><i class="fas fa-exchange-alt"></i> Empréstimos</a></li>
+            <li><a href="/reservas"><i class="fas fa-calendar-check"></i> Reservas</a></li>
+            <li><a href="/relatorios"><i class="fas fa-chart-bar"></i> Relatórios</a></li>
+        </ul>
+    </nav>
+</header>
+
+<main class="container">
+    <div class="card">
+        <!-- Título dinâmico -->
+        <h2>
+            <i class="fas" th:classappend="${usuario != null} ? 'fa-user-edit' : 'fa-user-plus'"></i>
+            <span th:text="${usuario != null} ? 'Editar Usuário' : 'Cadastrar Novo Usuário'"></span>
+        </h2>
+
+        <!-- Formulário dinâmico -->
+        <form th:action="${usuario != null} ? @{/usuarios/{id}/editar(id=${usuario.id})} : @{/usuarios/novo}"
+              method="post">
+
+            <!-- Campo hidden para ID (apenas na edição) -->
+            <input type="hidden" th:if="${usuario != null}" th:name="id" th:value="${usuario.id}">
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="form-group">
+                    <label for="nome">Nome Completo:</label>
+                    <input type="text" class="form-control" id="nome" name="nome"
+                           th:value="${usuario != null} ? ${usuario.nome} : ''" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="matricula">Matrícula:</label>
+                    <input type="text" class="form-control" id="matricula" name="matricula"
+                           th:value="${usuario != null} ? ${usuario.matricula} : ''" required>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="form-group">
+                    <label for="email">Email:</label>
+                    <input type="email" class="form-control" id="email" name="email"
+                           th:value="${usuario != null} ? ${usuario.email} : ''" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="tipo">Tipo de Usuário:</label>
+                    <select class="form-control" id="tipo" name="tipo" required>
+                        <option value="">Selecione o tipo...</option>
+                        <option value="ALUNO" th:selected="${usuario != null && usuario.tipo.name() == 'ALUNO'}">ALUNO</option>
+                        <option value="PROFESSOR" th:selected="${usuario != null && usuario.tipo.name() == 'PROFESSOR'}">PROFESSOR</option>
+                        <option value="FUNCIONARIO" th:selected="${usuario != null && usuario.tipo.name() == 'FUNCIONARIO'}">FUNCIONARIO</option>
+                    </select>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas" th:classappend="${usuario != null} ? 'fa-save' : 'fa-user-plus'"></i>
+                    <span th:text="${usuario != null} ? 'Atualizar Usuário' : 'Cadastrar Usuário'"></span>
+                </button>
+                <a href="/usuarios" class="btn btn-danger">
+                    <i class="fas fa-times"></i> Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+</main>
+
+<footer class="footer">
+    <p>&copy; 2024 Sistema de Biblioteca Universitária</p>
+</footer>
+
+<script th:inline="javascript">
+    // Mostrar mensagens de sucesso/erro
+    document.addEventListener('DOMContentLoaded', function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const sucesso = urlParams.get('sucesso');
+        const erro = urlParams.get('error');
+
+        if (sucesso) {
+            alert('✅ ' + decodeURIComponent(sucesso));
+            // Remove o parâmetro da URL
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+
+        if (erro) {
+            alert('❌ ' + decodeURIComponent(erro));
+            // Remove o parâmetro da URL
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+    });
+</script>
+</body>
+</html>

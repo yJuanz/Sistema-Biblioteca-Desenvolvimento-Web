@@ -99,7 +99,7 @@ public class CrudController {
             var usuario = usuarioService.buscarPorId(id)
                     .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
             model.addAttribute("usuario", usuario);
-            model.addAttribute("tiposUsuario", com.biblioteca.model.TipoUsuario.values());
+            model.addAttribute("tiposUsuario", com.example.Sistema_Biblioteca.model.TipoUsuario.values());
             return "form-usuario";  // ← USA form-usuario (template único)
         } catch (Exception e) {
             return "redirect:/usuarios?error=" + e.getMessage();
@@ -111,7 +111,7 @@ public class CrudController {
                                    @RequestParam String nome,
                                    @RequestParam String matricula,
                                    @RequestParam String email,
-                                   @RequestParam com.biblioteca.model.TipoUsuario tipo) {
+                                   @RequestParam com.example.Sistema_Biblioteca.model.TipoUsuario tipo) {
         try {
             var usuario = usuarioService.buscarPorId(id)
                     .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));

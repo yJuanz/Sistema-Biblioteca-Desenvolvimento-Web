@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar Usuário - Biblioteca</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+<header class="header">
+    <nav class="navbar">
+        <div class="logo">
+            <i class="fas fa-book"></i>
+            <span>Biblioteca Universitária</span>
+        </div>
+        <ul class="nav-links">
+            <li><a href="/"><i class="fas fa-home"></i> Início</a></li>
+            <li><a href="/livros"><i class="fas fa-book"></i> Livros</a></li>
+            <li><a href="/usuarios" class="active"><i class="fas fa-users"></i> Usuários</a></li>
+            <li><a href="/emprestimos"><i class="fas fa-exchange-alt"></i> Empréstimos</a></li>
+            <li><a href="/reservas"><i class="fas fa-calendar-check"></i> Reservas</a></li>
+            <li><a href="/relatorios"><i class="fas fa-chart-bar"></i> Relatórios</a></li>
+        </ul>
+    </nav>
+</header>
+
+<main class="container">
+    <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <a th:href="@{/usuarios}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Voltar
+                </a>
+                <h2 style="margin: 0;">
+                    <i class="fas fa-user-edit"></i>
+                    <span th:if="${usuario != null}">Editar Usuário</span>
+                    <span th:unless="${usuario != null}">Novo Usuário</span>
+                </h2>
+            </div>
+        </div>
+
+        <!-- Formulário de Edição -->
+        <form th:action="${usuario != null} ? @{/usuarios/{id}/editar(id=${usuario.id})} : @{/usuarios/novo}"
+              th:object="${usuario}" method="post" class="form">
+
+            <input type="hidden" th:field="*{id}" />
+
+            <div class="form-group">
+                <label for="nome">Nome Completo *</label>
+                <input type="text" id="nome" th:field="*{nome}" class="form-control" required
+                       placeholder="Digite o nome completo">
+                <div class="error-message" th:if="${#fields.hasErrors('nome')}" th:errors="*{nome}"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="matricula">Matrícula *</label>
+                <input type="text" id="matricula" th:field="*{matricula}" class="form-control" required
+                       placeholder="Digite a matrícula">
+                <div class="error-message" th:if="${#fields.hasErrors('matricula')}" th:errors="*{matricula}"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email *</label>
+                <input type="email" id="email" th:field="*{email}" class="form-control" required
+                       placeholder="Digite o email">
+                <div class="error-message" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="telefone">Telefone</label>
+                <input type="text" id="telefone" th:field="*{telefone}" class="form-control"
+                       placeholder="Digite o telefone">
+                <div class="error-message" th:if="${#fields.hasErrors('telefone')}" th:errors="*{telefone}"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="tipo">Tipo de Usuário *</label>
+                <select id="tipo" th:field="*{tipo}" class="form-control" required>
+                    <option value="">Selecione o tipo</option>
+                    <option th:each="tipo : ${T(com.sistema.biblioteca.model.TipoUsuario).values()}"
+                            th:value="${tipo}"
+                            th:text="${tipo}">
+                    </option>
+                </select>
+                <div class="error-message" th:if="${#fields.hasErrors('tipo')}" th:errors="*{tipo}"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="curso">Curso/Departamento</label>
+                <input type="text" id="curso" th:field="*{curso}" class="form-control"
+                       placeholder="Digite o curso ou departamento">
+                <div class="error-message" th:if="${#fields.hasErrors('curso')}" th:errors="*{curso}"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="dataNascimento">Data de Nascimento</label>
+                <input type="date" id="dataNascimento" th:field="*{dataNascimento}" class="form-control">
+                <div class="error-message" th:if="${#fields.hasErrors('dataNascimento')}" th:errors="*{dataNascimento}"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="endereco">Endereço</label>
+                <textarea id="endereco" th:field="*{endereco}" class="form-control" rows="3"
+                          placeholder="Digite o endereço completo"></textarea>
+                <div class="error-message" th:if="${#fields.hasErrors('endereco')}" th:errors="*{endereco}"></div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i>
+                    <span th:if="${usuario != null}">Atualizar Usuário</span>
+                    <span th:unless="${usuario != null}">Cadastrar Usuário</span>
+                </button>
+                <a th:href="@{/usuarios}" class="btn btn-secondary">
+                    <i class="fas fa-times"></i> Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+</main>
+
+<footer class="footer">
+    <p>&copy; 2024 Sistema de Biblioteca Universitária</p>
+</footer>
+
+<script th:inline="javascript">
+    document.addEventListener('DOMContentLoaded', function() {
+        // Máscara para telefone
+        const telefoneInput = document.getElementById('telefone');
+        if (telefoneInput) {
+            telefoneInput.addEventListener('input', function(e) {
+                let value = e.target.value.replace(/\D/g, '');
+                if (value.length > 11) value = value.substring(0, 11);
+
+                if (value.length <= 10) {
+                    value = value.replace(/(\d{2})(\d{4})(\d{0,4})/, '($1) $2-$3');
+                } else {
+                    value = value.replace(/(\d{2})(\d{5})(\d{0,4})/, '($1) $2-$3');
+                }
+
+                e.target.value = value;
+            });
+        }
+
+        // Validação do formulário
+        const form = document.querySelector('form');
+        form.addEventListener('submit', function(e) {
+            const requiredFields = form.querySelectorAll('[required]');
+            let isValid = true;
+
+            requiredFields.forEach(field => {
+                if (!field.value.trim()) {
+                    isValid = false;
+                    field.style.borderColor = '#dc3545';
+                } else {
+                    field.style.borderColor = '';
+                }
+            });
+
+            if (!isValid) {
+                e.preventDefault();
+                alert('Por favor, preencha todos os campos obrigatórios.');
+            }
+        });
+
+        // Mostrar mensagens de erro de validação
+        const urlParams = new URLSearchParams(window.location.search);
+        const error = urlParams.get('error');
+        if (error) {
+            alert('❌ ' + decodeURIComponent(error));
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+    });
+</script>
+</body>
+</html>

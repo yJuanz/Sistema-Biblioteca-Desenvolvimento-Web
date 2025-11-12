@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar Livro - Biblioteca</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+<header class="header">
+    <nav class="navbar">
+        <div class="logo">
+            <i class="fas fa-book"></i>
+            <span>Biblioteca Universitária</span>
+        </div>
+        <ul class="nav-links">
+            <li><a href="/"><i class="fas fa-home"></i> Início</a></li>
+            <li><a href="/livros"><i class="fas fa-book"></i> Livros</a></li>
+            <li><a href="/usuarios"><i class="fas fa-users"></i> Usuários</a></li>
+            <li><a href="/emprestimos"><i class="fas fa-exchange-alt"></i> Empréstimos</a></li>
+            <li><a href="/reservas"><i class="fas fa-calendar-check"></i> Reservas</a></li>
+            <li><a href="/relatorios"><i class="fas fa-chart-bar"></i> Relatórios</a></li>
+        </ul>
+    </nav>
+</header>
+
+<main class="container">
+    <div class="card">
+        <h2><i class="fas fa-edit"></i> Editar Livro</h2>
+
+        <form th:action="@{/livros/{id}/editar(id=${livro.id})}" method="post">
+            <div class="form-group">
+                <label for="titulo">Título:</label>
+                <input type="text" class="form-control" id="titulo" name="titulo"
+                       th:value="${livro.titulo}" required>
+            </div>
+
+            <div class="form-group">
+                <label for="isbn">ISBN:</label>
+                <input type="text" class="form-control" id="isbn" name="isbn"
+                       th:value="${livro.isbn}" required>
+            </div>
+
+            <div class="form-group">
+                <label for="anoPublicacao">Ano de Publicação:</label>
+                <input type="number" class="form-control" id="anoPublicacao" name="anoPublicacao"
+                       th:value="${livro.anoPublicacao}" required>
+            </div>
+
+            <div class="form-group">
+                <label for="quantidadeExemplares">Quantidade de Exemplares:</label>
+                <input type="number" class="form-control" id="quantidadeExemplares" name="quantidadeExemplares"
+                       th:value="${livro.quantidadeExemplares}" min="1" required>
+            </div>
+
+            <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Atualizar Livro
+                </button>
+                <a th:href="@{/livros/{id}(id=${livro.id})}" class="btn btn-secondary">
+                    <i class="fas fa-times"></i> Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+</main>
+
+<footer class="footer">
+    <p>&copy; 2024 Sistema de Biblioteca Universitária</p>
+</footer>
+</body>
+</html>

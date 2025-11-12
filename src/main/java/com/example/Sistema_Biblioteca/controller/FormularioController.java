@@ -35,7 +35,7 @@ public class FormularioController {
                               @RequestParam Integer anoPublicacao,
                               @RequestParam Integer quantidadeExemplares) {
         try {
-            var livro = new com.biblioteca.model.Livro();
+            var livro = new com.example.Sistema_Biblioteca.model.Livro();
             livro.setTitulo(titulo);
             livro.setIsbn(isbn);
             livro.setAnoPublicacao(anoPublicacao);
@@ -62,7 +62,7 @@ public class FormularioController {
                                 @RequestParam String email,
                                 @RequestParam TipoUsuario tipo) {
         try {
-            var usuario = new com.biblioteca.model.Usuario();
+            var usuario = new com.example.Sistema_Biblioteca.model.Usuario();
             usuario.setNome(nome);
             usuario.setMatricula(matricula);
             usuario.setEmail(email);

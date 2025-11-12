@@ -1,7 +1,7 @@
-package com.biblioteca.service;
+package com.example.Sistema_Biblioteca.service;
 
-import com.biblioteca.model.Categoria;
-import com.biblioteca.repository.CategoriaRepository;
+import com.example.Sistema_Biblioteca.model.Categoria;
+import com.example.Sistema_Biblioteca.repository.CategoriaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
