@@ -1,19 +1,24 @@
 package com.example.Sistema_Biblioteca.controller;
 
-import com.example.Sistema_Biblioteca.model.Livro;
-import com.example.Sistema_Biblioteca.model.Usuario;
-import com.example.Sistema_Biblioteca.model.Emprestimo;
+import com.example.Sistema_Biblioteca.model.*; // Importa todos os models
+import com.example.Sistema_Biblioteca.repository.MultaRepository;
+import com.example.Sistema_Biblioteca.repository.ReservaRepository;
 import com.example.Sistema_Biblioteca.service.LivroService;
 import com.example.Sistema_Biblioteca.service.UsuarioService;
 import com.example.Sistema_Biblioteca.service.EmprestimoService;
+// NÃO PRECISA DO ReservaService
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
+import java.time.LocalDateTime; // Importar
+import java.util.ArrayList; // Importar
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
+
 
 @Controller
 public class WebController {
@@ -27,6 +32,14 @@ public class WebController {
     @Autowired
     private EmprestimoService emprestimoService;
 
+    // ----- ADIÇÕES NECESSÁRIAS -----
+    @Autowired
+    private ReservaRepository reservaRepository; // <-- INJETAR REPOSITORY
+
+    @Autowired
+    private MultaRepository multaRepository; // <-- INJETAR REPOSITORY
+    // ---------------------------------
+
     @GetMapping("/")
     public String home(Model model) {
         // Estatísticas para a página inicial
@@ -37,7 +50,10 @@ public class WebController {
 
         // Livros mais populares (com mais empréstimos)
         List<Livro> livrosPopulares = livros.stream()
-                .sorted((l1, l2) -> Integer.compare(l2.getEmprestimos().size(), l1.getEmprestimos().size()))
+                .sorted((l1, l2) -> Integer.compare(
+                        l2.getEmprestimos() != null ? l2.getEmprestimos().size() : 0,
+                        l1.getEmprestimos() != null ? l1.getEmprestimos().size() : 0
+                ))
                 .limit(5)
                 .collect(Collectors.toList());
 
@@ -62,7 +78,13 @@ public class WebController {
         List<Livro> livros = livroService.listarTodos();
         long livrosDisponiveis = livros.stream().filter(l -> l.getExemplaresDisponiveis() > 0).count();
         long livrosIndisponiveis = livros.stream().filter(l -> l.getExemplaresDisponiveis() == 0).count();
-        long categoriasCount = livros.stream().map(l -> l.getCategoria()).distinct().count();
+        
+        long categoriasCount = livros.stream()
+                .map(Livro::getCategoria)
+                .filter(Objects::nonNull)
+                .map(Categoria::getNome)
+                .distinct()
+                .count();
 
         model.addAttribute("livros", livros);
         model.addAttribute("totalLivros", livros.size());
@@ -94,7 +116,6 @@ public class WebController {
         List<Emprestimo> emprestimosAtivos = emprestimoService.listarEmprestimosAtivos();
         List<Emprestimo> emprestimosAtrasados = emprestimoService.listarEmprestimosAtrasados();
 
-        // Calcular total de multas pendentes
         double totalMultas = emprestimosAtrasados.stream()
                 .filter(e -> e.getMulta() != null && e.getMulta().getStatus().name().equals("PENDENTE"))
                 .mapToDouble(e -> e.getMulta().getValor().doubleValue())
@@ -110,29 +131,49 @@ public class WebController {
         return "emprestimos";
     }
 
+    // ----- MÉTODO /reservas CORRIGIDO -----
     @GetMapping("/reservas")
     public String reservas(Model model) {
-        // Em uma implementação real, você buscaria as reservas do serviço
-        // Por enquanto, vamos usar dados vazios para demonstração
+        
+        // CORREÇÃO: Usando o ReservaRepository diretamente
+        List<Reserva> todasReservas = reservaRepository.findAll();
+        List<Reserva> reservasAtivas = todasReservas.stream()
+                .filter(r -> r.getStatus() == StatusReserva.ATIVA)
+                .collect(Collectors.toList());
+        
+        // Usando o método que já existe no seu repository
+        List<Reserva> reservasExpiradas = reservaRepository.findReservasExpiradas(LocalDateTime.now());
 
-        model.addAttribute("totalReservas", 0);
-        model.addAttribute("reservasAtivasCount", 0);
-        model.addAttribute("reservasExpiradasCount", 0);
-        model.addAttribute("livrosMaisReservadosCount", 0);
 
-        // Para o formulário de nova reserva
+        model.addAttribute("reservasAtivas", reservasAtivas);
+        model.addAttribute("reservasExpiradas", reservasExpiradas);
+        
+        // Popula as estatísticas
+        model.addAttribute("totalReservas", todasReservas.size());
+        model.addAttribute("reservasAtivasCount", reservasAtivas.size());
+        model.addAttribute("reservasExpiradasCount", reservasExpiradas.size());
+        model.addAttribute("livrosMaisReservadosCount", 0); // Placeholder
+
+        // Para o formulário de nova reserva na mesma página
         model.addAttribute("usuarios", usuarioService.listarTodos());
-        model.addAttribute("livrosDisponiveis", livroService.listarDisponiveis());
+        // Ajustado para 'livros' pois o form-reserva.html usa 'livros'
+        model.addAttribute("livros", livroService.listarTodos()); 
 
         return "reservas";
     }
+    // -----------------------------------------
 
+    // ----- MÉTODO /relatorios CORRIGIDO -----
     @GetMapping("/relatorios")
     public String relatorios(Model model) {
         List<Livro> livros = livroService.listarTodos();
         List<Usuario> usuarios = usuarioService.listarTodos();
-        List<Emprestimo> emprestimosAtivos = emprestimoService.listarEmprestimosAtivos();
-        List<Emprestimo> todosEmprestimos = emprestimoService.listarEmprestimosAtivos(); // Em real, buscar todos
+        
+        // ATENÇÃO: Você precisa criar o método listarTodos() no seu EmprestimoService
+        List<Emprestimo> todosEmprestimos = emprestimoService.listarTodos(); 
+        
+        // CORREÇÃO: Buscando multas do repository
+        List<Multa> multas = multaRepository.findAll();
 
         // Estatísticas básicas
         model.addAttribute("totalLivros", livros.size());
@@ -144,9 +185,9 @@ public class WebController {
                 (double) livros.stream().filter(l -> l.getExemplaresDisponiveis() < l.getQuantidadeExemplares()).count() / livros.size() * 100;
 
         model.addAttribute("taxaUtilizacao", String.format("%.1f", taxaUtilizacao));
-        model.addAttribute("tempoMedioEmprestimo", "14");
-        model.addAttribute("taxaRenovacao", "25");
-        model.addAttribute("taxaAtraso", "5");
+        model.addAttribute("tempoMedioEmprestimo", "14"); // Placeholder
+        model.addAttribute("taxaRenovacao", "25"); // Placeholder
+        model.addAttribute("taxaAtraso", "5"); // Placeholder
         model.addAttribute("livrosPorUsuario", String.format("%.1f", usuarios.isEmpty() ? 0 : (double) todosEmprestimos.size() / usuarios.size()));
 
         // Últimos empréstimos para o relatório detalhado
@@ -156,7 +197,9 @@ public class WebController {
                 .collect(Collectors.toList());
 
         model.addAttribute("ultimosEmprestimos", ultimosEmprestimos);
+        model.addAttribute("multas", multas); // <-- ADICIONADO
 
         return "relatorios";
     }
+    // -----------------------------------------
 }

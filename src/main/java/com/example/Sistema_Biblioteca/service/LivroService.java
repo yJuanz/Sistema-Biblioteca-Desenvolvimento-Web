@@ -1,13 +1,17 @@
 package com.example.Sistema_Biblioteca.service;
 
 import com.example.Sistema_Biblioteca.model.Livro;
+import com.example.Sistema_Biblioteca.model.LivroAutor;
+import com.example.Sistema_Biblioteca.model.LivroAutorId;
 import com.example.Sistema_Biblioteca.model.Autor;
-import com.example.Sistema_Biblioteca.model.Categoria;
-import com.example.Sistema_Biblioteca.model.Editora;
+// import com.example.Sistema_Biblioteca.model.Categoria;
+// import com.example.Sistema_Biblioteca.model.Editora;
 import com.example.Sistema_Biblioteca.repository.LivroRepository;
 import com.example.Sistema_Biblioteca.repository.AutorRepository;
-import com.example.Sistema_Biblioteca.repository.CategoriaRepository;
-import com.example.Sistema_Biblioteca.repository.EditoraRepository;
+// import com.example.Sistema_Biblioteca.repository.CategoriaRepository;
+// import com.example.Sistema_Biblioteca.repository.EditoraRepository;
+import com.example.Sistema_Biblioteca.repository.LivroAutorRepository;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -23,11 +27,14 @@ public class LivroService {
     @Autowired
     private AutorRepository autorRepository;
 
-    @Autowired
-    private CategoriaRepository categoriaRepository;
+    // @Autowired
+    // private CategoriaRepository categoriaRepository;
+
+    // @Autowired
+    // private EditoraRepository editoraRepository;
 
     @Autowired
-    private EditoraRepository editoraRepository;
+    private LivroAutorRepository livroAutorRepository;
 
     public List<Livro> listarTodos() {
         return livroRepository.findAll();
@@ -46,6 +53,7 @@ public class LivroService {
     }
 
     public List<Livro> buscarPorAutor(String autor) {
+        // Esta query foi corrigida no LivroRepository para usar a junção LivroAutor
         return livroRepository.findByAutorNomeContaining(autor);
     }
 
@@ -93,10 +101,14 @@ public class LivroService {
                         livro.setCategoria(livroAtualizado.getCategoria());
                     }
 
-                    // Atualizar autores se fornecidos
-                    if (livroAtualizado.getAutores() != null && !livroAtualizado.getAutores().isEmpty()) {
-                        livro.setAutores(livroAtualizado.getAutores());
-                    }
+                    // ----- ESTE É O BLOCO QUE CAUSAVA O ERRO E FOI REMOVIDO -----
+                    // if (livroAtualizado.getAutores() != null && !livroAtualizado.getAutores().isEmpty()) {
+                    //    livro.setAutores(livroAtualizado.getAutores());
+                    // }
+                    // -------------------------------------------------------------
+                    
+                    // O gerenciamento de autores agora é feito separadamente
+                    // através dos métodos adicionarAutor() e removerAutor().
 
                     return livroRepository.save(livro);
                 })
@@ -112,6 +124,8 @@ public class LivroService {
             throw new RuntimeException("Não é possível excluir livro com exemplares emprestados");
         }
 
+        // A deleção do livro vai remover as associações em livro_autor
+        // devido ao CascadeType.ALL na entidade Livro
         livroRepository.delete(livro);
     }
 
@@ -122,10 +136,14 @@ public class LivroService {
         Autor autor = autorRepository.findById(autorId)
                 .orElseThrow(() -> new RuntimeException("Autor não encontrado"));
 
-        if (!livro.getAutores().contains(autor)) {
-            livro.getAutores().add(autor);
-            return livroRepository.save(livro);
-        }
+        // Cria a chave composta
+        LivroAutorId id = new LivroAutorId(livroId, autorId);
+        
+        // Cria a entidade de associação
+        LivroAutor livroAutor = new LivroAutor(id, livro, autor);
+        
+        // Salva a associação
+        livroAutorRepository.save(livroAutor);
 
         return livro;
     }
@@ -134,11 +152,19 @@ public class LivroService {
         Livro livro = livroRepository.findById(livroId)
                 .orElseThrow(() -> new RuntimeException("Livro não encontrado"));
 
-        Autor autor = autorRepository.findById(autorId)
-                .orElseThrow(() -> new RuntimeException("Autor não encontrado"));
+        // Autor autor = autorRepository.findById(autorId)
+        //         .orElseThrow(() -> new RuntimeException("Autor não encontrado"));
 
-        livro.getAutores().remove(autor);
-        return livroRepository.save(livro);
+        // Cria a chave composta para buscar
+        LivroAutorId id = new LivroAutorId(livroId, autorId);
+        
+        LivroAutor livroAutor = livroAutorRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Associação Autor-Livro não encontrada"));
+
+        // Deleta a associação
+        livroAutorRepository.delete(livroAutor);
+
+        return livro;
     }
 
     public Livro atualizarDisponibilidade(Long livroId, Integer novaQuantidade) {

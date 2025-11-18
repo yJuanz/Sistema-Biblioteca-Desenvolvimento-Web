@@ -20,7 +20,7 @@ public class Editora {
     private String telefone;
 
     // Relação Um-para-Muitos com Livro
-    @OneToMany(mappedBy = "editora", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "editora")
     private List<Livro> livros = new ArrayList<>();
 
     // Construtores

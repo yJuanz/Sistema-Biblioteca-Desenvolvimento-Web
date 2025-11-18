@@ -33,7 +33,7 @@ public class Emprestimo {
     @Column(nullable = false)
     private StatusEmprestimo status;
 
-    @OneToOne(mappedBy = "emprestimo", cascade = CascadeType.ALL)
+    @OneToOne(mappedBy = "emprestimo", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Multa multa;
 
     // Construtores
@@ -76,6 +76,13 @@ public class Emprestimo {
     public void setStatus(StatusEmprestimo status) { this.status = status; }
 
     public Multa getMulta() { return multa; }
-    public void setMulta(Multa multa) { this.multa = multa; }
-}
 
+    // --- MÉTODO MODIFICADO ---
+    // Garante que a relação bidirecional seja definida
+    public void setMulta(Multa multa) {
+        if (multa != null) {
+            multa.setEmprestimo(this);
+        }
+        this.multa = multa;
+    }
+}

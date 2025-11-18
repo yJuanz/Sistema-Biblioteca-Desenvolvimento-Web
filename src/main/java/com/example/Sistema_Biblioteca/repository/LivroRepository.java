@@ -20,7 +20,7 @@ public interface LivroRepository extends JpaRepository<Livro, Long> {
     @Query("SELECT l FROM Livro l WHERE l.categoria.nome = :categoria AND l.exemplaresDisponiveis > 0")
     List<Livro> findLivrosDisponiveisPorCategoria(@Param("categoria") String categoria);
 
-    @Query("SELECT l FROM Livro l JOIN l.autores a WHERE a.nome LIKE %:autor%")
+    @Query("SELECT l FROM Livro l JOIN l.livroAutores la JOIN la.autor a WHERE a.nome LIKE %:autor%")
     List<Livro> findByAutorNomeContaining(@Param("autor") String autor);
 
     @Query("SELECT l FROM Livro l WHERE l.anoPublicacao BETWEEN :anoInicio AND :anoFim")

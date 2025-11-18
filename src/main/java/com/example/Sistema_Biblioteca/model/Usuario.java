@@ -29,10 +29,10 @@ public class Usuario {
     @Column(nullable = false)
     private TipoUsuario tipo;
 
-    @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "usuario")
     private List<Emprestimo> emprestimos = new ArrayList<>();
 
-    @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "usuario")
     private List<Reserva> reservas = new ArrayList<>();
 
     @Column(name = "data_cadastro")

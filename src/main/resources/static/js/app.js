@@ -28,7 +28,13 @@ function inicializarConfirmacoes() {
 // Função para mostrar loading
 function mostrarLoading(mensagem = 'Carregando...') {
     // Implementar overlay de loading
+    // Ex: document.getElementById('loading-overlay').style.display = 'block';
     console.log(mensagem);
+}
+
+function esconderLoading() {
+    // Ex: document.getElementById('loading-overlay').style.display = 'none';
+    console.log('Carregamento finalizado.');
 }
 
 // Função para formatar datas
@@ -58,6 +64,6 @@ async function fazerRequisicao(url, options = {}) {
         alert('Erro: ' + error.message);
         throw error;
     } finally {
-        // Esconder loading
+        esconderLoading();
     }
 }

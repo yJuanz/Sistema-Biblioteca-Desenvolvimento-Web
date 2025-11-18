@@ -19,7 +19,7 @@ public class Categoria {
     private String descricao;
 
     // Relação Um-para-Muitos com Livro
-    @OneToMany(mappedBy = "categoria", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "categoria")
     private List<Livro> livros = new ArrayList<>();
 
     // Construtores

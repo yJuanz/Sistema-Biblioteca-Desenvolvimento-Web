@@ -4,6 +4,7 @@ import com.example.Sistema_Biblioteca.model.*;
 import com.example.Sistema_Biblioteca.repository.EmprestimoRepository;
 import com.example.Sistema_Biblioteca.repository.LivroRepository;
 import com.example.Sistema_Biblioteca.repository.UsuarioRepository;
+// import com.example.Sistema_Biblioteca.repository.MultaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -15,6 +16,9 @@ import java.util.List;
 
 @Service
 public class EmprestimoService {
+
+    // @Autowired
+    // private MultaRepository multaRepository;
 
     @Autowired
     private EmprestimoRepository emprestimoRepository;
@@ -99,7 +103,7 @@ public class EmprestimoService {
 
         // Verificar e aplicar multa se houver atraso
         if (emprestimo.getDataDevolucaoReal().isAfter(emprestimo.getDataDevolucaoPrevista())) {
-            aplicarMulta(emprestimo);
+            aplicarMulta(emprestimo); // <-- Isto agora funciona como exigido
         }
 
         return emprestimoRepository.save(emprestimo);
@@ -113,7 +117,11 @@ public class EmprestimoService {
 
         if (diasAtraso > 0) {
             BigDecimal valorMulta = BigDecimal.valueOf(diasAtraso * multaPorDia);
+            
+            // Cria a multa usando o construtor
             Multa multa = new Multa(emprestimo, valorMulta);
+            
+            // Seta a multa no empréstimo (o método setMulta garante a via dupla)
             emprestimo.setMulta(multa);
         }
     }
@@ -130,5 +138,9 @@ public class EmprestimoService {
         Usuario usuario = usuarioRepository.findById(usuarioId)
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
         return emprestimoRepository.findByUsuario(usuario);
+    }
+
+    public List<Emprestimo> listarTodos() {
+        return emprestimoRepository.findAll();
     }
 }
