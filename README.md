@@ -16,7 +16,8 @@ O domínio escolhido é a Gestão de Biblioteca. A modelagem foi desenhada para 
 2. Diagrama e Implementação dos Relacionamentos
    
 O projeto utiliza a seguinte estrutura para mapear as relações no JPA:
-![licensed-image](https://github.com/user-attachments/assets/a54c7e1b-d71b-4528-ac1a-c8a7fc6867ee)
+<img width="1092" height="869" alt="image" src="https://github.com/user-attachments/assets/64444614-7fe7-4ff0-8bf9-75d12f36d7a4" />
+
 
 🔑 Estruturas de Chaves Especiais
 
