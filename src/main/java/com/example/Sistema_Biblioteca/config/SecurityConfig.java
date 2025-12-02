@@ -22,33 +22,42 @@ public class SecurityConfig {
     private SecurityFilter securityFilter;
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        return http
-                .csrf(csrf -> csrf.disable())
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(authorize -> authorize
-                        // ROTAS PÚBLICAS
-                        .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/auth/register").permitAll()
-                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/h2-console/**").permitAll()
-                        
-                        // Permitir HTML/CSS/JS para não quebrar o front-end (se quiser proteger o front, remova isso)
-                        .requestMatchers("/", "/index", "/css/**", "/js/**", "/images/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/livros", "/usuarios", "/emprestimos", "/reservas").permitAll()
+public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    return http
+        .csrf(csrf -> csrf.disable()) // Desativa CSRF (Evita erro 403 em formulários POST)
+        .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) 
+        .authorizeHttpRequests(authorize -> authorize
+            // 1. RECURSOS PÚBLICOS (CSS, JS, IMAGENS)
+            .requestMatchers("/css/**", "/js/**", "/images/**", "/static/**").permitAll()
+            
+            // 2. FERRAMENTAS DE DEV (SWAGGER, H2)
+            .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/h2-console/**").permitAll()
 
-                        // ROTAS PROTEGIDAS (API)
-                        .requestMatchers(HttpMethod.POST, "/api/livros").hasRole("ADMIN") // Só admin cria livro
-                        .requestMatchers(HttpMethod.DELETE, "/api/livros/**").hasRole("ADMIN")
-                        
-                        // Qualquer outra rota precisa de autenticação
-                        .anyRequest().authenticated()
-                )
-                .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
-                // Configuração necessária para o H2 Console funcionar com Spring Security
-                .headers(headers -> headers.frameOptions(frame -> frame.disable())) 
-                .build();
-    }
+            // 3. LOGIN E REGISTRO
+            .requestMatchers("/auth/**", "/login").permitAll()
 
+            // 4. FRONT-END (THYMELEAF) - LIBERAR GERAL
+            // Atenção: O "/**" no final é crucial para permitir /livros/novo, /livros/1/editar, etc.
+            .requestMatchers("/", "/index").permitAll()
+            .requestMatchers("/livros/**").permitAll()      
+            .requestMatchers("/usuarios/**").permitAll()    
+            .requestMatchers("/emprestimos/**").permitAll() 
+            .requestMatchers("/reservas/**").permitAll()    
+            .requestMatchers("/relatorios/**").permitAll()  
+
+            // 5. API REST (SEGURANÇA REFORÇADA)
+            // Aqui aplicamos as regras de negócio
+            .requestMatchers(HttpMethod.POST, "/api/livros").hasRole("ADMIN") // Só Admin cria via API
+            .requestMatchers(HttpMethod.DELETE, "/api/livros/**").hasRole("ADMIN") // Só Admin deleta via API
+            .requestMatchers("/api/**").authenticated() // O resto da API exige login
+
+            // 6. O RESTO
+            .anyRequest().permitAll() // Em caso de dúvida, libera para não travar seu teste
+        )
+        .headers(headers -> headers.frameOptions(frame -> frame.disable()))
+        .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
+        .build();
+}
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
         return authenticationConfiguration.getAuthenticationManager();

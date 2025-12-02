@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,172 +8,171 @@
     <link rel="stylesheet" th:href="@{/css/style.css}">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
+
 <body>
-<header class="header">
-    <nav class="navbar">
-        <div class="logo">
-            <i class="fas fa-book"></i>
-            <span>Biblioteca Universitária</span>
-        </div>
-        <ul class="nav-links">
-            <li><a href="/"><i class="fas fa-home"></i> Início</a></li>
-            <li><a href="/livros" class="active"><i class="fas fa-book"></i> Livros</a></li>
-            <li><a href="/usuarios"><i class="fas fa-users"></i> Usuários</a></li>
-            <li><a href="/emprestimos"><i class="fas fa-exchange-alt"></i> Empréstimos</a></li>
-            <li><a href="/reservas"><i class="fas fa-calendar-check"></i> Reservas</a></li>
-            <li><a href="/relatorios"><i class="fas fa-chart-bar"></i> Relatórios</a></li>
-        </ul>
-    </nav>
-</header>
-
-<main class="container">
-    <!-- Cabeçalho com ações -->
-    <div class="card">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-            <div style="display: flex; align-items: center; gap: 1rem;">
-                <a href="/" class="btn btn-secondary">
-                    <i class="fas fa-arrow-left"></i> Voltar
-                </a>
-                <h2 style="margin: 0;"><i class="fas fa-book"></i> Gestão de Livros</h2>
+    <header class="header">
+        <nav class="navbar">
+            <div class="logo">
+                <i class="fas fa-book"></i>
+                <span>Biblioteca Universitária</span>
             </div>
-            <a href="/livros/novo" class="btn btn-primary">
-                <i class="fas fa-plus"></i> Adicionar Livro
-            </a>
+            <ul class="nav-links">
+                <li><a href="/"><i class="fas fa-home"></i> Início</a></li>
+                <li><a href="/livros" class="active"><i class="fas fa-book"></i> Livros</a></li>
+                <li><a href="/usuarios"><i class="fas fa-users"></i> Usuários</a></li>
+                <li><a href="/emprestimos"><i class="fas fa-exchange-alt"></i> Empréstimos</a></li>
+                <li><a href="/reservas"><i class="fas fa-calendar-check"></i> Reservas</a></li>
+                <li><a href="/relatorios"><i class="fas fa-chart-bar"></i> Relatórios</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="container">
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <a href="/" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Voltar
+                    </a>
+                    <h2 style="margin: 0;"><i class="fas fa-book"></i> Gestão de Livros</h2>
+                </div>
+                <a href="/livros/novo" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Adicionar Livro
+                </a>
+            </div>
+
+            <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem;">
+                <input type="text" class="form-control" placeholder="Buscar por título..."
+                    style="flex: 1; min-width: 200px;">
+                <select class="form-control" style="width: 200px;">
+                    <option>Todas as Categorias</option>
+                    <option>Tecnologia</option>
+                    <option>Ficção</option>
+                    <option>Romance</option>
+                </select>
+                <button class="btn btn-primary">
+                    <i class="fas fa-search"></i> Buscar
+                </button>
+            </div>
         </div>
 
-        <!-- Filtros -->
-        <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem;">
-            <input type="text" class="form-control" placeholder="Buscar por título..." style="flex: 1; min-width: 200px;">
-            <select class="form-control" style="width: 200px;">
-                <option>Todas as Categorias</option>
-                <option>Tecnologia</option>
-                <option>Ficção</option>
-                <option>Romance</option>
-            </select>
-            <button class="btn btn-primary">
-                <i class="fas fa-search"></i> Buscar
-            </button>
-        </div>
-    </div>
-
-    <!-- Lista de Livros -->
-    <div class="card">
-        <h3><i class="fas fa-list"></i> Todos os Livros</h3>
-        <div class="table-container">
-            <table>
-                <thead>
-                <tr>
-                    <th>Título</th>
-                    <th>ISBN</th>
-                    <th>Autor(es)</th>
-                    <th>Ano</th>
-                    <th>Exemplares</th>
-                    <th>Status</th>
-                    <th>Ações</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr th:each="livro : ${livros}">
-                    <td th:text="${livro.titulo}">Java para Iniciantes</td>
-                    <td th:text="${livro.isbn}">978-85-12345-67-8</td>
-                    <td>
-                                <span th:if="${livro.autores != null and !livro.autores.empty}"
-                                      th:text="${#strings.listJoin(livro.autores.![nome], ', ')}">
+        <div class="card">
+            <h3><i class="fas fa-list"></i> Todos os Livros</h3>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Título</th>
+                            <th>ISBN</th>
+                            <th>Autor(es)</th>
+                            <th>Ano</th>
+                            <th>Exemplares</th>
+                            <th>Status</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="livro : ${livros}">
+                            <td th:text="${livro.titulo}">Java para Iniciantes</td>
+                            <td th:text="${livro.isbn}">978-85-12345-67-8</td>
+                            
+                            <td>
+                                <span th:if="${livro.livroAutores != null and !livro.livroAutores.empty}"
+                                      th:text="${#strings.listJoin(livro.livroAutores.![autor.nome], ', ')}">
                                     João Silva
                                 </span>
-                        <span th:if="${livro.autores == null or livro.autores.empty}">
+                                <span th:if="${livro.livroAutores == null or livro.livroAutores.empty}">
                                     Nenhum autor
                                 </span>
-                    </td>
-                    <td th:text="${livro.anoPublicacao}">2023</td>
-                    <td th:text="${livro.exemplaresDisponiveis + '/' + livro.quantidadeExemplares}">4/5</td>
-                    <td>
+                            </td>
+
+                            <td th:text="${livro.anoPublicacao}">2023</td>
+                            <td th:text="${livro.exemplaresDisponiveis + '/' + livro.quantidadeExemplares}">4/5</td>
+                            <td>
                                 <span class="status status-disponivel" th:if="${livro.exemplaresDisponiveis > 0}">
                                     Disponível
                                 </span>
-                        <span class="status status-emprestado" th:if="${livro.exemplaresDisponiveis == 0}">
+                                <span class="status status-emprestado" th:if="${livro.exemplaresDisponiveis == 0}">
                                     Indisponível
                                 </span>
-                    </td>
-                    <td>
-                        <div style="display: flex; gap: 0.5rem;">
-                            <!-- Visualizar -->
-                            <a th:href="@{/livros/{id}(id=${livro.id})}" class="btn btn-primary btn-sm">
-                                <i class="fas fa-eye"></i>
-                            </a>
-                            <!-- Editar -->
-                            <a th:href="@{/livros/{id}/editar(id=${livro.id})}" class="btn btn-success btn-sm">
-                                <i class="fas fa-edit"></i>
-                            </a>
-                            <!-- Excluir -->
-                            <form th:action="@{/livros/{id}/excluir(id=${livro.id})}" method="post" style="display: inline;">
-                                <button type="submit" class="btn btn-danger btn-sm"
-                                        onclick="return confirm('Tem certeza que deseja excluir este livro?')">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </form>
-                        </div>
-                    </td>
-                </tr>
-                <tr th:if="${livros == null or livros.empty}">
-                    <td colspan="7" style="text-align: center;">
-                        <div class="loading">Nenhum livro cadastrado</div>
-                    </td>
-                </tr>
-                </tbody>
-            </table>
+                            </td>
+                            <td>
+                                <div style="display: flex; gap: 0.5rem;">
+                                    <a th:href="@{/livros/{id}(id=${livro.id})}" class="btn btn-primary btn-sm">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a th:href="@{/livros/{id}/editar(id=${livro.id})}" class="btn btn-success btn-sm">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <form th:action="@{/livros/{id}/excluir(id=${livro.id})}" method="post"
+                                        style="display: inline;">
+                                        <button type="submit" class="btn btn-danger btn-sm"
+                                            onclick="return confirm('Tem certeza que deseja excluir este livro?')">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr th:if="${livros == null or livros.empty}">
+                            <td colspan="7" style="text-align: center;">
+                                <div class="loading">Nenhum livro cadastrado</div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
-    </div>
 
-    <!-- Estatísticas dos Livros -->
-    <div class="cards-grid">
-        <div class="stat-card">
-            <i class="fas fa-book-open"></i>
-            <span class="stat-number" th:text="${totalLivros ?: '0'}">0</span>
-            <span class="stat-label">Total de Livros</span>
+        <div class="cards-grid">
+            <div class="stat-card">
+                <i class="fas fa-book-open"></i>
+                <span class="stat-number" th:text="${totalLivros ?: '0'}">0</span>
+                <span class="stat-label">Total de Livros</span>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-check-circle"></i>
+                <span class="stat-number" th:text="${livrosDisponiveis ?: '0'}">0</span>
+                <span class="stat-label">Livros Disponíveis</span>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-times-circle"></i>
+                <span class="stat-number" th:text="${livrosIndisponiveis ?: '0'}">0</span>
+                <span class="stat-label">Livros Emprestados</span>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-chart-line"></i>
+                <span class="stat-number" th:text="${categoriasCount ?: '0'}">0</span>
+                <span class="stat-label">Categorias</span>
+            </div>
         </div>
-        <div class="stat-card">
-            <i class="fas fa-check-circle"></i>
-            <span class="stat-number" th:text="${livrosDisponiveis ?: '0'}">0</span>
-            <span class="stat-label">Livros Disponíveis</span>
-        </div>
-        <div class="stat-card">
-            <i class="fas fa-times-circle"></i>
-            <span class="stat-number" th:text="${livrosIndisponiveis ?: '0'}">0</span>
-            <span class="stat-label">Livros Emprestados</span>
-        </div>
-        <div class="stat-card">
-            <i class="fas fa-chart-line"></i>
-            <span class="stat-number" th:text="${categoriasCount ?: '0'}">0</span>
-            <span class="stat-label">Categorias</span>
-        </div>
-    </div>
-</main>
+    </main>
 
-<footer class="footer">
-    <p>&copy; 2024 Sistema de Biblioteca Universitária</p>
-</footer>
+    <footer class="footer">
+        <p>&copy; 2024 Sistema de Biblioteca Universitária</p>
+    </footer>
 
-<script th:inline="javascript">
-    function confirmarExclusao(id, titulo) {
-        if (confirm('Tem certeza que deseja excluir o livro "' + titulo + '"?')) {
-            fetch('/api/livros/' + id, {
-                method: 'DELETE',
-            })
-            .then(response => {
-                if (response.ok) {
-                    alert('Livro excluído com sucesso!');
-                    location.reload();
-                } else {
-                    alert('Erro ao excluir livro.');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Erro ao excluir livro.');
-            });
+    <script th:inline="javascript">
+        function confirmarExclusao(id, titulo) {
+            if (confirm('Tem certeza que deseja excluir o livro "' + titulo + '"?')) {
+                fetch('/api/livros/' + id, {
+                    method: 'DELETE',
+                })
+                    .then(response => {
+                        if (response.ok) {
+                            alert('Livro excluído com sucesso!');
+                            location.reload();
+                        } else {
+                            alert('Erro ao excluir livro.');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Erro ao excluir livro.');
+                    });
+            }
         }
-    }
-</script>
+    </script>
 </body>
+
 </html>

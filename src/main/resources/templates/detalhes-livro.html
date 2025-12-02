@@ -16,7 +16,7 @@
         </div>
         <ul class="nav-links">
             <li><a href="/"><i class="fas fa-home"></i> Início</a></li>
-            <li><a href="/livros"><i class="fas fa-book"></i> Livros</a></li>
+            <li><a href="/livros" class="active"><i class="fas fa-book"></i> Livros</a></li>
             <li><a href="/usuarios"><i class="fas fa-users"></i> Usuários</a></li>
             <li><a href="/emprestimos"><i class="fas fa-exchange-alt"></i> Empréstimos</a></li>
             <li><a href="/reservas"><i class="fas fa-calendar-check"></i> Reservas</a></li>
@@ -27,46 +27,97 @@
 
 <main class="container">
     <div class="card">
-        <h2><i class="fas fa-book"></i> Detalhes do Livro</h2>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+            <h2><i class="fas fa-book-open"></i> Detalhes do Livro</h2>
+            <form th:action="@{/livros/{id}/excluir(id=${livro.id})}" method="post" 
+                  onsubmit="return confirm('Tem certeza que deseja excluir este livro e todo seu histórico?')">
+                <button type="submit" class="btn btn-danger">
+                    <i class="fas fa-trash"></i> Excluir Livro
+                </button>
+            </form>
+        </div>
 
-        <div th:if="${livro}" style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+        <div th:if="${livro}" style="display: grid; grid-template-columns: 1fr 1fr; gap: 3rem;">
+            
             <div>
-                <h3>Informações Básicas</h3>
-                <div class="form-group">
-                    <label><strong>Título:</strong></label>
-                    <p th:text="${livro.titulo}"></p>
+                <h3 style="border-bottom: 2px solid #ecf0f1; padding-bottom: 0.5rem; margin-bottom: 1.5rem;">
+                    <i class="fas fa-info-circle"></i> Informações Básicas
+                </h3>
+
+                <div class="form-group" style="margin-bottom: 1rem;">
+                    <label style="color: #7f8c8d; font-size: 0.9rem;">Título</label>
+                    <p style="font-size: 1.2rem; font-weight: bold; margin: 0;" th:text="${livro.titulo}"></p>
                 </div>
-                <div class="form-group">
-                    <label><strong>ISBN:</strong></label>
-                    <p th:text="${livro.isbn}"></p>
+
+                <div class="form-group" style="margin-bottom: 1rem;">
+                    <label style="color: #7f8c8d; font-size: 0.9rem;">Autor(es)</label>
+                    <p style="font-size: 1.1rem; margin: 0;">
+                        <span th:if="${not #lists.isEmpty(livro.livroAutores)}" 
+                              th:text="${#strings.listJoin(livro.livroAutores.![autor.nome], ', ')}">
+                        </span>
+                        <span th:if="${#lists.isEmpty(livro.livroAutores)}" style="color: #95a5a6; font-style: italic;">
+                            Não informado
+                        </span>
+                    </p>
                 </div>
+
+                <div class="form-group" style="margin-bottom: 1rem;">
+                    <label style="color: #7f8c8d; font-size: 0.9rem;">Categoria</label>
+                    <p style="font-size: 1.1rem; margin: 0;" 
+                       th:text="${livro.categoria != null ? livro.categoria.nome : 'Sem Categoria'}">
+                    </p>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 1rem;">
+                    <label style="color: #7f8c8d; font-size: 0.9rem;">Editora</label>
+                    <p style="font-size: 1.1rem; margin: 0;" 
+                       th:text="${livro.editora != null ? livro.editora.nome : 'Sem Editora'}">
+                    </p>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 1rem;">
+                    <label style="color: #7f8c8d; font-size: 0.9rem;">ISBN</label>
+                    <p style="font-size: 1.1rem; margin: 0;" th:text="${livro.isbn}"></p>
+                </div>
+
                 <div class="form-group">
-                    <label><strong>Ano de Publicação:</strong></label>
-                    <p th:text="${livro.anoPublicacao}"></p>
+                    <label style="color: #7f8c8d; font-size: 0.9rem;">Ano de Publicação</label>
+                    <p style="font-size: 1.1rem; margin: 0;" th:text="${livro.anoPublicacao}"></p>
                 </div>
             </div>
 
             <div>
-                <h3>Disponibilidade</h3>
-                <div class="form-group">
-                    <label><strong>Exemplares:</strong></label>
-                    <p th:text="${livro.exemplaresDisponiveis + ' / ' + livro.quantidadeExemplares}"></p>
+                <h3 style="border-bottom: 2px solid #ecf0f1; padding-bottom: 0.5rem; margin-bottom: 1.5rem;">
+                    <i class="fas fa-boxes"></i> Estoque e Status
+                </h3>
+
+                <div class="form-group" style="margin-bottom: 1.5rem;">
+                    <label style="color: #7f8c8d; font-size: 0.9rem;">Exemplares (Disponíveis / Total)</label>
+                    <p style="font-size: 2rem; font-weight: bold; color: #2c3e50; margin: 0;" 
+                       th:text="${livro.exemplaresDisponiveis + ' / ' + livro.quantidadeExemplares}"></p>
                 </div>
+
                 <div class="form-group">
-                    <label><strong>Status:</strong></label>
-                    <span class="status status-disponivel" th:if="${livro.exemplaresDisponiveis > 0}">
-                            Disponível
+                    <label style="color: #7f8c8d; font-size: 0.9rem;">Status Atual</label>
+                    <div style="margin-top: 0.5rem;">
+                        <span class="status status-disponivel" 
+                              th:if="${livro.exemplaresDisponiveis > 0}"
+                              style="font-size: 1rem; padding: 0.5rem 1rem;">
+                            <i class="fas fa-check-circle"></i> Disponível para Empréstimo
                         </span>
-                    <span class="status status-emprestado" th:if="${livro.exemplaresDisponiveis == 0}">
-                            Indisponível
+                        <span class="status status-emprestado" 
+                              th:if="${livro.exemplaresDisponiveis == 0}"
+                              style="font-size: 1rem; padding: 0.5rem 1rem;">
+                            <i class="fas fa-times-circle"></i> Esgotado / Indisponível
                         </span>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+        <div style="display: flex; gap: 1rem; margin-top: 3rem; border-top: 1px solid #eee; padding-top: 1.5rem;">
             <a th:href="@{/livros/{id}/editar(id=${livro.id})}" class="btn btn-success">
-                <i class="fas fa-edit"></i> Editar Livro
+                <i class="fas fa-edit"></i> Editar Informações
             </a>
             <a href="/livros" class="btn btn-primary">
                 <i class="fas fa-arrow-left"></i> Voltar para Lista

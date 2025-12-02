@@ -8,7 +8,6 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
 <body>
-<!-- Header -->
 <header class="header">
     <nav class="navbar">
         <div class="logo">
@@ -26,9 +25,7 @@
     </nav>
 </header>
 
-<!-- Conteúdo Principal -->
 <main class="container">
-    <!-- Estatísticas -->
     <div class="cards-grid">
         <div class="stat-card">
             <i class="fas fa-book"></i>
@@ -52,11 +49,9 @@
         </div>
     </div>
 
-    <!-- Ações Rápidas - CORREÇÃO AQUI -->
     <div class="card">
         <h2><i class="fas fa-bolt"></i> Ações Rápidas</h2>
         <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
-            <!-- CORREÇÃO: Use th:href com a sintaxe correta do Thymeleaf -->
             <a th:href="@{/livros/novo}" class="btn btn-primary">
                 <i class="fas fa-plus"></i> Novo Livro
             </a>
@@ -72,7 +67,6 @@
         </div>
     </div>
 
-    <!-- Empréstimos Recentes -->
     <div class="card">
         <h2><i class="fas fa-clock"></i> Empréstimos Recentes</h2>
         <div class="table-container">
@@ -88,8 +82,8 @@
                 </thead>
                 <tbody>
                 <tr th:each="emprestimo : ${ultimosEmprestimos}">
-                    <td th:text="${emprestimo.usuario.nome}">João Silva</td>
-                    <td th:text="${emprestimo.livro.titulo}">Java para Iniciantes</td>
+                    <td th:text="${emprestimo.usuario?.nome}">João Silva</td>
+                    <td th:text="${emprestimo.livro?.titulo}">Java para Iniciantes</td>
                     <td th:text="${#temporals.format(emprestimo.dataEmprestimo, 'dd/MM/yyyy')}">10/11/2024</td>
                     <td th:text="${#temporals.format(emprestimo.dataDevolucaoPrevista, 'dd/MM/yyyy')}">24/11/2024</td>
                     <td>
@@ -106,7 +100,6 @@
         </div>
     </div>
 
-    <!-- Livros Populares -->
     <div class="card">
         <h2><i class="fas fa-chart-line"></i> Livros Mais Emprestados</h2>
         <div class="table-container">
@@ -114,7 +107,7 @@
                 <thead>
                 <tr>
                     <th>Livro</th>
-                    <th>Autor</th>
+                    <th>Autor(es)</th>
                     <th>Total Empréstimos</th>
                     <th>Disponível</th>
                 </tr>
@@ -122,15 +115,25 @@
                 <tbody>
                 <tr th:each="livro : ${livrosPopulares}">
                     <td th:text="${livro.titulo}">Java para Iniciantes</td>
-                    <td th:text="${#strings.listJoin(livro.autores.![nome], ', ')}">João Silva</td>
-                    <td th:text="${livro.emprestimos.size()}">15</td>
+                    
                     <td>
-                                <span class="status status-disponivel" th:if="${livro.exemplaresDisponiveis > 0}">
-                                    <i class="fas fa-check"></i> Disponível
-                                </span>
+                        <span th:if="${livro.livroAutores != null and !livro.livroAutores.empty}"
+                              th:text="${#strings.listJoin(livro.livroAutores.![autor.nome], ', ')}">
+                            João Silva
+                        </span>
+                        <span th:if="${livro.livroAutores == null or livro.livroAutores.empty}">
+                            Nenhum autor
+                        </span>
+                    </td>
+
+                    <td th:text="${livro.emprestimos != null ? livro.emprestimos.size() : 0}">15</td>
+                    <td>
+                        <span class="status status-disponivel" th:if="${livro.exemplaresDisponiveis > 0}">
+                            <i class="fas fa-check"></i> Disponível
+                        </span>
                         <span class="status status-emprestado" th:if="${livro.exemplaresDisponiveis == 0}">
-                                    <i class="fas fa-times"></i> Indisponível
-                                </span>
+                            <i class="fas fa-times"></i> Indisponível
+                        </span>
                     </td>
                 </tr>
                 <tr th:if="${livrosPopulares == null or livrosPopulares.empty}">
@@ -142,7 +145,6 @@
     </div>
 </main>
 
-<!-- Footer -->
 <footer class="footer">
     <p>&copy; 2024 Sistema de Biblioteca Universitária. Desenvolvido com Spring Boot.</p>
     <p>

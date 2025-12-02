@@ -8,32 +8,51 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+
+/**
+ * Controller principal para operações de CRUD (Create, Read, Update, Delete)
+ * Gerencia as requisições vindas das páginas de listagem e detalhes.
+ */
 @Controller
 public class CrudController {
 
-    @Autowired
-    private LivroService livroService;
+    @Autowired private LivroService livroService;
+    @Autowired private UsuarioService usuarioService;
+    @Autowired private EmprestimoService emprestimoService;
 
-    @Autowired
-    private UsuarioService usuarioService;
+    // Método utilitário para codificar mensagens de erro na URL (ex: espaços viram %20)
+    private String encode(String text) {
+        try {
+            return URLEncoder.encode(text != null ? text : "", StandardCharsets.UTF_8.toString());
+        } catch (Exception e) {
+            return "erro";
+        }
+    }
 
-    @Autowired
-    private EmprestimoService emprestimoService;
+    // =========================================================
+    // AÇÕES PARA LIVROS
+    // =========================================================
 
-    // ========== AÇÕES PARA LIVROS ==========
-
+    /**
+     * Exibe a página de detalhes de um livro específico.
+     */
     @GetMapping("/livros/{id}")
     public String visualizarLivro(@PathVariable Long id, Model model) {
         try {
             var livro = livroService.buscarPorId(id)
                     .orElseThrow(() -> new RuntimeException("Livro não encontrado"));
-            model.addAttribute("livro", livro);
+            model.addAttribute("livro", livro); // Passa o objeto para o HTML
             return "detalhes-livro";
         } catch (Exception e) {
-            return "redirect:/livros?error=" + e.getMessage();
+            return "redirect:/livros?error=" + encode(e.getMessage());
         }
     }
 
+    /**
+     * Carrega o formulário de edição com os dados atuais do livro.
+     */
     @GetMapping("/livros/{id}/editar")
     public String editarLivro(@PathVariable Long id, Model model) {
         try {
@@ -42,43 +61,51 @@ public class CrudController {
             model.addAttribute("livro", livro);
             return "form-livro-editar";
         } catch (Exception e) {
-            return "redirect:/livros?error=" + e.getMessage();
+            return "redirect:/livros?error=" + encode(e.getMessage());
         }
     }
 
+    /**
+     * Processa a atualização do livro.
+     * Recebe todos os campos do formulário, incluindo Autor, Categoria e Editora.
+     */
     @PostMapping("/livros/{id}/editar")
     public String atualizarLivro(@PathVariable Long id,
                                  @RequestParam String titulo,
                                  @RequestParam String isbn,
                                  @RequestParam Integer anoPublicacao,
-                                 @RequestParam Integer quantidadeExemplares) {
+                                 @RequestParam Integer quantidadeExemplares,
+                                 @RequestParam String nomeAutor,      // Recebido do input 'nomeAutor'
+                                 @RequestParam String nomeCategoria,  // Recebido do input 'nomeCategoria'
+                                 @RequestParam String nomeEditora) {  // Recebido do input 'nomeEditora'
         try {
-            var livro = livroService.buscarPorId(id)
-                    .orElseThrow(() -> new RuntimeException("Livro não encontrado"));
-
-            livro.setTitulo(titulo);
-            livro.setIsbn(isbn);
-            livro.setAnoPublicacao(anoPublicacao);
-            livro.setQuantidadeExemplares(quantidadeExemplares);
-
-            livroService.atualizar(id, livro);
-            return "redirect:/livros?sucesso=Livro atualizado com sucesso";
+            // Chama o serviço robusto para atualizar tudo
+            livroService.atualizarCompleto(id, titulo, isbn, anoPublicacao, quantidadeExemplares, nomeAutor, nomeCategoria, nomeEditora);
+            
+            return "redirect:/livros?sucesso=" + encode("Livro atualizado com sucesso");
         } catch (Exception e) {
-            return "redirect:/livros/" + id + "/editar?error=" + e.getMessage();
+            e.printStackTrace(); // Ajuda no debug
+            return "redirect:/livros/" + id + "/editar?error=" + encode(e.getMessage());
         }
     }
 
+    /**
+     * Processa a exclusão de um livro.
+     */
     @PostMapping("/livros/{id}/excluir")
     public String excluirLivro(@PathVariable Long id) {
         try {
-            livroService.deletar(id);
-            return "redirect:/livros?sucesso=Livro excluído com sucesso";
+            livroService.deletar(id); // Chama a exclusão segura no service
+            return "redirect:/livros?sucesso=" + encode("Livro excluído com sucesso");
         } catch (Exception e) {
-            return "redirect:/livros?error=" + e.getMessage();
+            // Se falhar (ex: livro emprestado), mostra o erro na lista
+            return "redirect:/livros?error=" + encode(e.getMessage());
         }
     }
 
-    // ========== AÇÕES PARA USUÁRIOS ==========
+    // =========================================================
+    // AÇÕES PARA USUÁRIOS
+    // =========================================================
 
     @GetMapping("/usuarios/{id}")
     public String visualizarUsuario(@PathVariable Long id, Model model) {
@@ -88,21 +115,21 @@ public class CrudController {
             model.addAttribute("usuario", usuario);
             return "detalhes-usuario";
         } catch (Exception e) {
-            return "redirect:/usuarios?error=" + e.getMessage();
+            return "redirect:/usuarios?error=" + encode(e.getMessage());
         }
     }
 
-    // === MÉTODO QUE ESTAVA FALTANDO ===
     @GetMapping("/usuarios/{id}/editar")
     public String editarUsuario(@PathVariable Long id, Model model) {
         try {
             var usuario = usuarioService.buscarPorId(id)
                     .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
             model.addAttribute("usuario", usuario);
+            // Passa os valores do Enum para o select do HTML
             model.addAttribute("tiposUsuario", com.example.Sistema_Biblioteca.model.TipoUsuario.values());
-            return "form-usuario";  // ← USA form-usuario (template único)
+            return "form-usuario";
         } catch (Exception e) {
-            return "redirect:/usuarios?error=" + e.getMessage();
+            return "redirect:/usuarios?error=" + encode(e.getMessage());
         }
     }
 
@@ -122,9 +149,9 @@ public class CrudController {
             usuario.setTipo(tipo);
 
             usuarioService.atualizar(id, usuario);
-            return "redirect:/usuarios?sucesso=Usuário atualizado com sucesso";
+            return "redirect:/usuarios?sucesso=" + encode("Usuário atualizado com sucesso");
         } catch (Exception e) {
-            return "redirect:/usuarios/" + id + "/editar?error=" + e.getMessage();
+            return "redirect:/usuarios/" + id + "/editar?error=" + encode(e.getMessage());
         }
     }
 
@@ -132,32 +159,23 @@ public class CrudController {
     public String excluirUsuario(@PathVariable Long id) {
         try {
             usuarioService.deletar(id);
-            return "redirect:/usuarios?sucesso=Usuário excluído com sucesso";
+            return "redirect:/usuarios?sucesso=" + encode("Usuário excluído com sucesso");
         } catch (Exception e) {
-            return "redirect:/usuarios?error=" + e.getMessage();
+            return "redirect:/usuarios?error=" + encode(e.getMessage());
         }
     }
 
-    // ========== AÇÕES PARA EMPRÉSTIMOS ==========
+    // =========================================================
+    // AÇÕES PARA EMPRÉSTIMOS
+    // =========================================================
 
     @GetMapping("/emprestimos/{id}")
     public String visualizarEmprestimo(@PathVariable Long id, Model model) {
+        // Redireciona para a lista geral, pois não temos página de detalhes de empréstimo ainda
         try {
-            // Em uma implementação real, você teria um serviço para buscar empréstimo por ID
-            // Por enquanto, vamos redirecionar para a lista
             return "redirect:/emprestimos";
         } catch (Exception e) {
-            return "redirect:/emprestimos?error=" + e.getMessage();
-        }
-    }
-
-    @PostMapping("/emprestimos/{id}/devolver")
-    public String devolverEmprestimo(@PathVariable Long id) {
-        try {
-            emprestimoService.devolverLivro(id);
-            return "redirect:/emprestimos?sucesso=Livro devolvido com sucesso";
-        } catch (Exception e) {
-            return "redirect:/emprestimos?error=" + e.getMessage();
+            return "redirect:/emprestimos?error=" + encode(e.getMessage());
         }
     }
 }

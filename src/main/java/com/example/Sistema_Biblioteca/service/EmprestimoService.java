@@ -112,16 +112,15 @@ public class EmprestimoService {
     private void aplicarMulta(Emprestimo emprestimo) {
         long diasAtraso = java.time.Duration.between(
                 emprestimo.getDataDevolucaoPrevista(),
-                emprestimo.getDataDevolucaoReal()
-        ).toDays();
+                emprestimo.getDataDevolucaoReal()).toDays();
 
         if (diasAtraso > 0) {
-            BigDecimal valorMulta = BigDecimal.valueOf(diasAtraso * multaPorDia);
-            
-            // Cria a multa usando o construtor
-            Multa multa = new Multa(emprestimo, valorMulta);
-            
-            // Seta a multa no empréstimo (o método setMulta garante a via dupla)
+            // Correção para evitar erro de matemática: converte tudo para BigDecimal
+            BigDecimal valorPorDia = BigDecimal.valueOf(multaPorDia);
+            BigDecimal dias = BigDecimal.valueOf(diasAtraso);
+            BigDecimal valorTotal = valorPorDia.multiply(dias);
+
+            Multa multa = new Multa(emprestimo, valorTotal);
             emprestimo.setMulta(multa);
         }
     }

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,410 +9,346 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
+
 <body>
-<header class="header">
-    <nav class="navbar">
-        <div class="logo">
-            <i class="fas fa-book"></i>
-            <span>Biblioteca Universitária</span>
-        </div>
-        <ul class="nav-links">
-            <li><a href="/"><i class="fas fa-home"></i> Início</a></li>
-            <li><a href="/livros"><i class="fas fa-book"></i> Livros</a></li>
-            <li><a href="/usuarios"><i class="fas fa-users"></i> Usuários</a></li>
-            <li><a href="/emprestimos"><i class="fas fa-exchange-alt"></i> Empréstimos</a></li>
-            <li><a href="/reservas"><i class="fas fa-calendar-check"></i> Reservas</a></li>
-            <li><a href="/relatorios" class="active"><i class="fas fa-chart-bar"></i> Relatórios</a></li>
-        </ul>
-    </nav>
-</header>
-
-<main class="container">
-    <div class="card">
-        <h2><i class="fas fa-chart-bar"></i> Relatórios e Estatísticas</h2>
-        <p>Análise completa do desempenho da biblioteca</p>
-    </div>
-
-    <!-- Filtros de Período -->
-    <div class="card">
-        <h3><i class="fas fa-filter"></i> Filtros</h3>
-        <div style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 1rem; align-items: end;">
-            <div class="form-group">
-                <label for="dataInicio">Data Início:</label>
-                <input type="date" class="form-control" id="dataInicio" th:value="${#temporals.format(#temporals.createNow().minusMonths(1), 'yyyy-MM-dd')}">
+    <header class="header">
+        <nav class="navbar">
+            <div class="logo">
+                <i class="fas fa-book"></i>
+                <span>Biblioteca Universitária</span>
             </div>
-            <div class="form-group">
-                <label for="dataFim">Data Fim:</label>
-                <input type="date" class="form-control" id="dataFim" th:value="${#temporals.format(#temporals.createNow(), 'yyyy-MM-dd')}">
+            <ul class="nav-links">
+                <li><a href="/"><i class="fas fa-home"></i> Início</a></li>
+                <li><a href="/livros"><i class="fas fa-book"></i> Livros</a></li>
+                <li><a href="/usuarios"><i class="fas fa-users"></i> Usuários</a></li>
+                <li><a href="/emprestimos"><i class="fas fa-exchange-alt"></i> Empréstimos</a></li>
+                <li><a href="/reservas"><i class="fas fa-calendar-check"></i> Reservas</a></li>
+                <li><a href="/relatorios" class="active"><i class="fas fa-chart-bar"></i> Relatórios</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="container">
+        <div class="card">
+            <h2><i class="fas fa-chart-bar"></i> Relatórios e Estatísticas</h2>
+            <p>Análise completa do desempenho da biblioteca</p>
+        </div>
+
+        <div class="card">
+            <h3><i class="fas fa-filter"></i> Filtros</h3>
+            <div style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 1rem; align-items: end;">
+                <div class="form-group">
+                    <label for="dataInicio">Data Início:</label>
+                    <input type="date" class="form-control" id="dataInicio"
+                        th:value="${#temporals.format(#temporals.createNow().minusMonths(1), 'yyyy-MM-dd')}">
+                </div>
+                <div class="form-group">
+                    <label for="dataFim">Data Fim:</label>
+                    <input type="date" class="form-control" id="dataFim"
+                        th:value="${#temporals.format(#temporals.createNow(), 'yyyy-MM-dd')}">
+                </div>
+                <div>
+                    <button class="btn btn-primary" onclick="carregarRelatorios()">
+                        <i class="fas fa-sync"></i> Atualizar
+                    </button>
+                    <button class="btn btn-success" onclick="exportarRelatorio()">
+                        <i class="fas fa-download"></i> Exportar
+                    </button>
+                </div>
             </div>
-            <div>
-                <button class="btn btn-primary" onclick="carregarRelatorios()">
-                    <i class="fas fa-sync"></i> Atualizar
-                </button>
-                <button class="btn btn-success" onclick="exportarRelatorio()">
-                    <i class="fas fa-download"></i> Exportar
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Estatísticas Principais -->
-    <div class="cards-grid">
-        <div class="stat-card">
-            <i class="fas fa-book"></i>
-            <span class="stat-number" th:text="${totalLivros ?: '0'}">0</span>
-            <span class="stat-label">Total de Livros</span>
-        </div>
-        <div class="stat-card">
-            <i class="fas fa-users"></i>
-            <span class="stat-number" th:text="${totalUsuarios ?: '0'}">0</span>
-            <span class="stat-label">Usuários Cadastrados</span>
-        </div>
-        <div class="stat-card">
-            <i class="fas fa-exchange-alt"></i>
-            <span class="stat-number" th:text="${totalEmprestimos ?: '0'}">0</span>
-            <span class="stat-label">Empréstimos Totais</span>
-        </div>
-        <div class="stat-card">
-            <i class="fas fa-percentage"></i>
-            <!-- CORREÇÃO AQUI: Use | | para concatenar texto -->
-            <span class="stat-number" th:text="|${taxaUtilizacao ?: '0'}%|">0%</span>
-            <span class="stat-label">Taxa de Utilização</span>
-        </div>
-    </div>
-
-    <!-- Gráficos -->
-    <div class="cards-grid">
-        <!-- Empréstimos por Mês -->
-        <div class="card">
-            <h3><i class="fas fa-chart-line"></i> Empréstimos por Mês</h3>
-            <canvas id="chartEmprestimos" width="400" height="200"></canvas>
         </div>
 
-        <!-- Livros Mais Emprestados -->
-        <div class="card">
-            <h3><i class="fas fa-chart-bar"></i> Top 5 Livros Mais Emprestados</h3>
-            <canvas id="chartLivrosPopulares" width="400" height="200"></canvas>
-        </div>
-    </div>
-
-    <div class="cards-grid">
-        <!-- Empréstimos por Categoria -->
-        <div class="card">
-            <h3><i class="fas fa-chart-pie"></i> Empréstimos por Categoria</h3>
-            <canvas id="chartCategorias" width="400" height="200"></canvas>
-        </div>
-
-        <!-- Empréstimos por Tipo de Usuário -->
-        <div class="card">
-            <h3><i class="fas fa-user-friends"></i> Empréstimos por Tipo de Usuário</h3>
-            <canvas id="chartTiposUsuario" width="400" height="200"></canvas>
-        </div>
-    </div>
-
-    <!-- Relatórios Detalhados -->
-    <div class="card">
-        <h3><i class="fas fa-table"></i> Relatório Detalhado - Últimos Empréstimos</h3>
-        <div class="table-container">
-            <table>
-                <thead>
-                <tr>
-                    <th>Data</th>
-                    <th>Usuário</th>
-                    <th>Tipo</th>
-                    <th>Livro</th>
-                    <th>Categoria</th>
-                    <th>Status</th>
-                    <th>Duração</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr th:each="emprestimo : ${ultimosEmprestimos}">
-                    <td th:text="${#temporals.format(emprestimo.dataEmprestimo, 'dd/MM/yyyy')}">10/11/2024</td>
-                    <td th:text="${emprestimo.usuario.nome}">Ana Pereira</td>
-                    <td>
-                                <span class="status" th:classappend="${emprestimo.usuario.tipo.name() == 'ALUNO'} ? 'status-disponivel' :
-                                    ${emprestimo.usuario.tipo.name() == 'PROFESSOR'} ? 'status-ativo' : 'status-emprestado'}">
-                                    <span th:text="${emprestimo.usuario.tipo}">ALUNO</span>
-                                </span>
-                    </td>
-                    <td th:text="${emprestimo.livro.titulo}">Java para Iniciantes</td>
-                    <td th:text="${emprestimo.livro.categoria?.nome}">Tecnologia</td>
-                    <td>
-                                <span class="status" th:classappend="${emprestimo.status.name() == 'ATIVO'} ? 'status-ativo' :
-                                    ${emprestimo.status.name() == 'DEVOLVIDO'} ? 'status-disponivel' : 'status-emprestado'}">
-                                    <span th:text="${emprestimo.status}">ATIVO</span>
-                                </span>
-                    </td>
-                    <td>
-                                <span th:if="${emprestimo.dataDevolucaoReal != null}"
-                                      th:text="${#temporals.daysBetween(emprestimo.dataEmprestimo, emprestimo.dataDevolucaoReal) + ' dias'}">
-                                    14 dias
-                                </span>
-                        <span th:if="${emprestimo.dataDevolucaoReal == null}"
-                              th:text="${#temporals.daysUntil(emprestimo.dataDevolucaoPrevista) + ' dias restantes'}">
-                                    5 dias restantes
-                                </span>
-                    </td>
-                </tr>
-                <tr th:if="${ultimosEmprestimos == null or ultimosEmprestimos.empty}">
-                    <td colspan="7" style="text-align: center;">
-                        <div class="loading">Nenhum empréstimo encontrado</div>
-                    </td>
-                </tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    <!-- Métricas de Desempenho -->
-    <div class="card">
-        <h3><i class="fas fa-tachometer-alt"></i> Métricas de Desempenho</h3>
         <div class="cards-grid">
             <div class="stat-card">
-                <i class="fas fa-clock"></i>
-                <!-- CORREÇÃO: Use | | para texto com variáveis -->
-                <span class="stat-number" th:text="|${tempoMedioEmprestimo ?: '0'} dias|">14 dias</span>
-                <span class="stat-label">Dias Médio/Empréstimo</span>
+                <i class="fas fa-book"></i>
+                <span class="stat-number" th:text="${totalLivros ?: '0'}">0</span>
+                <span class="stat-label">Total de Livros</span>
             </div>
             <div class="stat-card">
-                <i class="fas fa-redo"></i>
-                <span class="stat-number" th:text="|${taxaRenovacao ?: '0'}%|">25%</span>
-                <span class="stat-label">Taxa de Renovação</span>
+                <i class="fas fa-users"></i>
+                <span class="stat-number" th:text="${totalUsuarios ?: '0'}">0</span>
+                <span class="stat-label">Usuários Cadastrados</span>
             </div>
             <div class="stat-card">
-                <i class="fas fa-exclamation-triangle"></i>
-                <span class="stat-number" th:text="|${taxaAtraso ?: '0'}%|">5%</span>
-                <span class="stat-label">Taxa de Atraso</span>
+                <i class="fas fa-exchange-alt"></i>
+                <span class="stat-number" th:text="${totalEmprestimos ?: '0'}">0</span>
+                <span class="stat-label">Empréstimos Totais</span>
             </div>
             <div class="stat-card">
-                <i class="fas fa-book-reader"></i>
-                <span class="stat-number" th:text="${livrosPorUsuario ?: '0'}">2.3</span>
-                <span class="stat-label">Livros/Usuário (médio)</span>
+                <i class="fas fa-percentage"></i>
+                <span class="stat-number" th:text="|${taxaUtilizacao ?: '0'}%|">0%</span>
+                <span class="stat-label">Taxa de Utilização</span>
             </div>
         </div>
-    </div>
 
-    <!-- Relatório de Multas -->
-    <div class="card">
-        <h3><i class="fas fa-money-bill-wave"></i> Relatório de Multas</h3>
-        <div class="table-container">
-            <table>
-                <thead>
-                <tr>
-                    <th>Usuário</th>
-                    <th>Livro</th>
-                    <th>Data Cobrança</th>
-                    <th>Valor</th>
-                    <th>Status</th>
-                    <th>Dias Atraso</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr th:each="multa : ${multas}">
-                    <td th:text="${multa.emprestimo.usuario.nome}">Ana Pereira</td>
-                    <td th:text="${multa.emprestimo.livro.titulo}">Java para Iniciantes</td>
-                    <td th:text="${#temporals.format(multa.dataCobranca, 'dd/MM/yyyy')}">25/11/2024</td>
-                    <td th:text="'R$ ' + ${#numbers.formatDecimal(multa.valor, 1, 2)}">R$ 10,00</td>
-                    <td>
-                                <span class="status" th:classappend="${multa.status.name() == 'PENDENTE'} ? 'status-emprestado' : 'status-disponivel'">
+        <div class="cards-grid">
+            <div class="card">
+                <h3><i class="fas fa-chart-line"></i> Empréstimos por Mês</h3>
+                <canvas id="chartEmprestimos" width="400" height="200"></canvas>
+            </div>
+
+            <div class="card">
+                <h3><i class="fas fa-chart-bar"></i> Top 5 Livros Mais Emprestados</h3>
+                <canvas id="chartLivrosPopulares" width="400" height="200"></canvas>
+            </div>
+        </div>
+
+        <div class="cards-grid">
+            <div class="card">
+                <h3><i class="fas fa-chart-pie"></i> Empréstimos por Categoria</h3>
+                <canvas id="chartCategorias" width="400" height="200"></canvas>
+            </div>
+
+            <div class="card">
+                <h3><i class="fas fa-user-friends"></i> Empréstimos por Tipo de Usuário</h3>
+                <canvas id="chartTiposUsuario" width="400" height="200"></canvas>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3><i class="fas fa-table"></i> Relatório Detalhado - Últimos Empréstimos</h3>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Usuário</th>
+                            <th>Tipo</th>
+                            <th>Livro</th>
+                            <th>Categoria</th>
+                            <th>Status</th>
+                            <th>Situação</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="emprestimo : ${ultimosEmprestimos}">
+                            <td th:text="${#temporals.format(emprestimo.dataEmprestimo, 'dd/MM/yyyy')}">10/11/2024</td>
+                            
+                            <td th:text="${emprestimo.usuario != null ? emprestimo.usuario.nome : 'Desconhecido'}">Ana Pereira</td>
+                            
+                            <td>
+                                <span class="status" th:if="${emprestimo.usuario != null}"
+                                    th:classappend="${emprestimo.usuario.tipo.name() == 'ALUNO' ? 'status-disponivel' : (emprestimo.usuario.tipo.name() == 'PROFESSOR' ? 'status-ativo' : 'status-emprestado')}">
+                                    <span th:text="${emprestimo.usuario.tipo}">ALUNO</span>
+                                </span>
+                            </td>
+
+                            <td th:text="${emprestimo.livro != null ? emprestimo.livro.titulo : 'Desconhecido'}">Java</td>
+                            
+                            <td th:text="${emprestimo.livro != null && emprestimo.livro.categoria != null ? emprestimo.livro.categoria.nome : '-'}">Tecnologia</td>
+                            
+                            <td>
+                                <span class="status"
+                                    th:classappend="${emprestimo.status.name() == 'ATIVO' ? 'status-ativo' : (emprestimo.status.name() == 'DEVOLVIDO' ? 'status-disponivel' : 'status-emprestado')}">
+                                    <span th:text="${emprestimo.status}">ATIVO</span>
+                                </span>
+                            </td>
+                            
+                            <td>
+                                <span th:if="${emprestimo.dataDevolucaoReal != null}">
+                                    Devolvido
+                                </span>
+                                <span th:if="${emprestimo.dataDevolucaoReal == null}">
+                                    Em Aberto
+                                </span>
+                            </td>
+                        </tr>
+                        <tr th:if="${ultimosEmprestimos == null or ultimosEmprestimos.empty}">
+                            <td colspan="7" style="text-align: center;">
+                                <div class="loading">Nenhum empréstimo encontrado</div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3><i class="fas fa-tachometer-alt"></i> Métricas de Desempenho</h3>
+            <div class="cards-grid">
+                <div class="stat-card">
+                    <i class="fas fa-clock"></i>
+                    <span class="stat-number" th:text="|${tempoMedioEmprestimo ?: '0'} dias|">14 dias</span>
+                    <span class="stat-label">Dias Médio/Empréstimo</span>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-redo"></i>
+                    <span class="stat-number" th:text="|${taxaRenovacao ?: '0'}%|">25%</span>
+                    <span class="stat-label">Taxa de Renovação</span>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <span class="stat-number" th:text="|${taxaAtraso ?: '0'}%|">5%</span>
+                    <span class="stat-label">Taxa de Atraso</span>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-book-reader"></i>
+                    <span class="stat-number" th:text="${livrosPorUsuario ?: '0'}">2.3</span>
+                    <span class="stat-label">Livros/Usuário (médio)</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3><i class="fas fa-money-bill-wave"></i> Relatório de Multas</h3>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Usuário</th>
+                            <th>Livro</th>
+                            <th>Data Cobrança</th>
+                            <th>Valor</th>
+                            <th>Status</th>
+                            <th>Situação</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="multa : ${multas}">
+                            <td th:text="${multa.emprestimo != null && multa.emprestimo.usuario != null ? multa.emprestimo.usuario.nome : 'Usuário Desconhecido'}">Ana Pereira</td>
+                            
+                            <td th:text="${multa.emprestimo != null && multa.emprestimo.livro != null ? multa.emprestimo.livro.titulo : 'Livro Desconhecido'}">Java para Iniciantes</td>
+                            
+                            <td th:text="${#temporals.format(multa.dataCobranca, 'dd/MM/yyyy')}">25/11/2024</td>
+                            
+                            <td th:text="'R$ ' + ${#numbers.formatDecimal(multa.valor, 1, 2)}">R$ 10,00</td>
+                            
+                            <td>
+                                <span class="status"
+                                    th:classappend="${multa.status.name() == 'PENDENTE' ? 'status-emprestado' : 'status-disponivel'}">
                                     <span th:text="${multa.status}">PENDENTE</span>
                                 </span>
-                    </td>
-                    <td th:text="${#temporals.daysUntil(multa.emprestimo.dataDevolucaoPrevista) * -1}">5</td>
-                </tr>
-                <tr th:if="${multas == null or multas.empty}">
-                    <td colspan="6" style="text-align: center;">
-                        <div class="loading">Nenhuma multa registrada</div>
-                    </td>
-                </tr>
-                </tbody>
-            </table>
-        </div>
-
-    </div>
-
-    <div class="card">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-            <div style="display: flex; align-items: center; gap: 1rem;">
-                <a href="/" class="btn btn-secondary">
-                    <i class="fas fa-arrow-left"></i> Voltar
-                </a>
-                <h2 style="margin: 0;"><i class="fas fa-chart-bar"></i> Relatórios e Estatísticas</h2>
+                            </td>
+                            
+                            <td>
+                                <span th:if="${multa.status.name() == 'PENDENTE'}">A Pagar</span>
+                                <span th:if="${multa.status.name() != 'PENDENTE'}">Resolvido</span>
+                            </td>
+                        </tr>
+                        <tr th:if="${multas == null or multas.empty}">
+                            <td colspan="6" style="text-align: center;">
+                                <div class="loading">Nenhuma multa registrada</div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
-        <p>Análise completa do desempenho da biblioteca</p>
-    </div>
 
+    </main>
 
-</main>
+    <footer class="footer">
+        <p>&copy; 2024 Sistema de Biblioteca Universitária</p>
+        <p>Relatório gerado em: <span
+                th:text="${#temporals.format(#temporals.createNow(), 'dd/MM/yyyy HH:mm')}">09/11/2024 21:54</span></p>
+    </footer>
 
-<footer class="footer">
-    <p>&copy; 2024 Sistema de Biblioteca Universitária</p>
-    <p>Relatório gerado em: <span th:text="${#temporals.format(#temporals.createNow(), 'dd/MM/yyyy HH:mm')}">09/11/2024 21:54</span></p>
-</footer>
+    <script th:inline="javascript">
+        // Dados de exemplo para os gráficos
+        const dadosGraficos = {
+            emprestimosMensais: {
+                labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'],
+                data: [45, 52, 48, 61, 55, 58, 63, 59, 65, 70, 68, 72]
+            },
+            livrosPopulares: {
+                labels: ['Java para Iniciantes', 'Spring Boot', 'Ficção Científica', 'Romance Clássico', 'Banco de Dados'],
+                data: [25, 18, 12, 8, 6]
+            },
+            categorias: {
+                labels: ['Tecnologia', 'Ficção', 'Romance', 'Ciências', 'História'],
+                data: [45, 20, 15, 12, 8]
+            },
+            tiposUsuario: {
+                labels: ['Alunos', 'Professores', 'Funcionários'],
+                data: [65, 25, 10]
+            }
+        };
 
-<script th:inline="javascript">
-    // Dados de exemplo para os gráficos (substituir por dados reais da API)
-    const dadosGraficos = {
-        emprestimosMensais: {
-            labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'],
-            data: [45, 52, 48, 61, 55, 58, 63, 59, 65, 70, 68, 72]
-        },
-        livrosPopulares: {
-            labels: ['Java para Iniciantes', 'Spring Boot', 'Ficção Científica', 'Romance Clássico', 'Banco de Dados'],
-            data: [25, 18, 12, 8, 6]
-        },
-        categorias: {
-            labels: ['Tecnologia', 'Ficção', 'Romance', 'Ciências', 'História'],
-            data: [45, 20, 15, 12, 8]
-        },
-        tiposUsuario: {
-            labels: ['Alunos', 'Professores', 'Funcionários'],
-            data: [65, 25, 10]
-        }
-    };
+        function inicializarGraficos() {
+            // Gráfico de empréstimos por mês
+            const ctx1 = document.getElementById('chartEmprestimos');
+            if (ctx1) {
+                new Chart(ctx1, {
+                    type: 'line',
+                    data: {
+                        labels: dadosGraficos.emprestimosMensais.labels,
+                        datasets: [{
+                            label: 'Empréstimos',
+                            data: dadosGraficos.emprestimosMensais.data,
+                            borderColor: '#3498db',
+                            backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }]
+                    },
+                    options: { responsive: true }
+                });
+            }
 
-    // Inicializar gráficos
-    function inicializarGraficos() {
-        // Gráfico de empréstimos por mês
-        const ctx1 = document.getElementById('chartEmprestimos');
-        if (ctx1) {
-            new Chart(ctx1, {
-                type: 'line',
-                data: {
-                    labels: dadosGraficos.emprestimosMensais.labels,
-                    datasets: [{
-                        label: 'Empréstimos',
-                        data: dadosGraficos.emprestimosMensais.data,
-                        borderColor: '#3498db',
-                        backgroundColor: 'rgba(52, 152, 219, 0.1)',
-                        tension: 0.4,
-                        fill: true
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        title: {
-                            display: true,
-                            text: 'Empréstimos Mensais'
-                        }
-                    }
-                }
-            });
-        }
+            // Gráfico de livros populares
+            const ctx2 = document.getElementById('chartLivrosPopulares');
+            if (ctx2) {
+                new Chart(ctx2, {
+                    type: 'bar',
+                    data: {
+                        labels: dadosGraficos.livrosPopulares.labels,
+                        datasets: [{
+                            label: 'Empréstimos',
+                            data: dadosGraficos.livrosPopulares.data,
+                            backgroundColor: ['#3498db', '#2ecc71', '#e74c3c', '#f39c12', '#9b59b6']
+                        }]
+                    },
+                    options: { responsive: true, indexAxis: 'y' }
+                });
+            }
 
-        // Gráfico de livros populares
-        const ctx2 = document.getElementById('chartLivrosPopulares');
-        if (ctx2) {
-            new Chart(ctx2, {
-                type: 'bar',
-                data: {
-                    labels: dadosGraficos.livrosPopulares.labels,
-                    datasets: [{
-                        label: 'Empréstimos',
-                        data: dadosGraficos.livrosPopulares.data,
-                        backgroundColor: [
-                            '#3498db', '#2ecc71', '#e74c3c', '#f39c12', '#9b59b6'
-                        ]
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    indexAxis: 'y',
-                    plugins: {
-                        title: {
-                            display: true,
-                            text: 'Livros Mais Emprestados'
-                        }
-                    }
-                }
-            });
-        }
+            // Gráfico de categorias
+            const ctx3 = document.getElementById('chartCategorias');
+            if (ctx3) {
+                new Chart(ctx3, {
+                    type: 'doughnut',
+                    data: {
+                        labels: dadosGraficos.categorias.labels,
+                        datasets: [{
+                            data: dadosGraficos.categorias.data,
+                            backgroundColor: ['#3498db', '#2ecc71', '#e74c3c', '#f39c12', '#9b59b6']
+                        }]
+                    },
+                    options: { responsive: true }
+                });
+            }
 
-        // Gráfico de categorias
-        const ctx3 = document.getElementById('chartCategorias');
-        if (ctx3) {
-            new Chart(ctx3, {
-                type: 'doughnut',
-                data: {
-                    labels: dadosGraficos.categorias.labels,
-                    datasets: [{
-                        data: dadosGraficos.categorias.data,
-                        backgroundColor: [
-                            '#3498db', '#2ecc71', '#e74c3c', '#f39c12', '#9b59b6'
-                        ]
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        title: {
-                            display: true,
-                            text: 'Distribuição por Categoria'
-                        }
-                    }
-                }
-            });
+            // Gráfico de tipos de usuário
+            const ctx4 = document.getElementById('chartTiposUsuario');
+            if (ctx4) {
+                new Chart(ctx4, {
+                    type: 'pie',
+                    data: {
+                        labels: dadosGraficos.tiposUsuario.labels,
+                        datasets: [{
+                            data: dadosGraficos.tiposUsuario.data,
+                            backgroundColor: ['#3498db', '#2ecc71', '#e74c3c']
+                        }]
+                    },
+                    options: { responsive: true }
+                });
+            }
         }
 
-        // Gráfico de tipos de usuário
-        const ctx4 = document.getElementById('chartTiposUsuario');
-        if (ctx4) {
-            new Chart(ctx4, {
-                type: 'pie',
-                data: {
-                    labels: dadosGraficos.tiposUsuario.labels,
-                    datasets: [{
-                        data: dadosGraficos.tiposUsuario.data,
-                        backgroundColor: [
-                            '#3498db', '#2ecc71', '#e74c3c'
-                        ]
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        title: {
-                            display: true,
-                            text: 'Empréstimos por Tipo de Usuário'
-                        }
-                    }
-                }
-            });
+        function carregarRelatorios() {
+            const dataInicio = document.getElementById('dataInicio').value;
+            const dataFim = document.getElementById('dataFim').value;
+            console.log('Carregando relatórios de', dataInicio, 'até', dataFim);
+            inicializarGraficos();
+            alert('Relatórios atualizados para o período selecionado!');
         }
-    }
 
-    function carregarRelatorios() {
-        const dataInicio = document.getElementById('dataInicio').value;
-        const dataFim = document.getElementById('dataFim').value;
+        function exportarRelatorio() {
+            alert('Funcionalidade de exportação seria implementada aqui!');
+        }
 
-        // Aqui você faria uma requisição para a API para buscar dados do período
-        console.log('Carregando relatórios de', dataInicio, 'até', dataFim);
-
-        // Por enquanto, apenas recarrega os gráficos
-        inicializarGraficos();
-
-        alert('Relatórios atualizados para o período selecionado!');
-    }
-
-    function exportarRelatorio() {
-        const dataInicio = document.getElementById('dataInicio').value;
-        const dataFim = document.getElementById('dataFim').value;
-
-        // Simular exportação
-        alert('Funcionalidade de exportação seria implementada aqui!');
-
-        // Em uma implementação real:
-        // const link = document.createElement('a');
-        // link.href = '/api/relatorios/exportar?inicio=' + dataInicio + '&fim=' + dataFim;
-        // link.download = 'relatorio_biblioteca_' + dataInicio + '_a_' + dataFim + '.pdf';
-        // link.click();
-    }
-
-    // Inicializar gráficos quando a página carregar
-    document.addEventListener('DOMContentLoaded', inicializarGraficos);
-</script>
+        document.addEventListener('DOMContentLoaded', inicializarGraficos);
+    </script>
 </body>
+
 </html>

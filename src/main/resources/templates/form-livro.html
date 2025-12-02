@@ -16,7 +16,7 @@
         </div>
         <ul class="nav-links">
             <li><a href="/"><i class="fas fa-home"></i> Início</a></li>
-            <li><a href="/livros"><i class="fas fa-book"></i> Livros</a></li>
+            <li><a href="/livros" class="active"><i class="fas fa-book"></i> Livros</a></li>
             <li><a href="/usuarios"><i class="fas fa-users"></i> Usuários</a></li>
             <li><a href="/emprestimos"><i class="fas fa-exchange-alt"></i> Empréstimos</a></li>
             <li><a href="/reservas"><i class="fas fa-calendar-check"></i> Reservas</a></li>
@@ -29,25 +29,51 @@
     <div class="card">
         <h2><i class="fas fa-plus-circle"></i> Adicionar Novo Livro</h2>
 
+        <div th:if="${param.error}" class="alert alert-danger" style="background-color: #f8d7da; color: #721c24; padding: 10px; margin-bottom: 15px; border-radius: 5px;">
+            <i class="fas fa-exclamation-circle"></i> <span th:text="${param.error}"></span>
+        </div>
+
         <form action="/livros/novo" method="post">
-            <div class="form-group">
-                <label for="titulo">Título:</label>
-                <input type="text" class="form-control" id="titulo" name="titulo" required>
+            
+            <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1rem;">
+                <div class="form-group">
+                    <label for="titulo">Título do Livro:</label>
+                    <input type="text" class="form-control" id="titulo" name="titulo" placeholder="Ex: Engenharia de Software" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="isbn">ISBN:</label>
+                    <input type="text" class="form-control" id="isbn" name="isbn" placeholder="Ex: 978-3-16-148410-0" required>
+                </div>
             </div>
 
-            <div class="form-group">
-                <label for="isbn">ISBN:</label>
-                <input type="text" class="form-control" id="isbn" name="isbn" required>
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem;">
+                <div class="form-group">
+                    <label for="nomeAutor">Nome do Autor:</label>
+                    <input type="text" class="form-control" id="nomeAutor" name="nomeAutor" placeholder="Ex: Robert C. Martin" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="nomeCategoria">Categoria:</label>
+                    <input type="text" class="form-control" id="nomeCategoria" name="nomeCategoria" placeholder="Ex: Tecnologia" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="nomeEditora">Editora:</label>
+                    <input type="text" class="form-control" id="nomeEditora" name="nomeEditora" placeholder="Ex: Alta Books" required>
+                </div>
             </div>
 
-            <div class="form-group">
-                <label for="anoPublicacao">Ano de Publicação:</label>
-                <input type="number" class="form-control" id="anoPublicacao" name="anoPublicacao" required>
-            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="form-group">
+                    <label for="anoPublicacao">Ano de Publicação:</label>
+                    <input type="number" class="form-control" id="anoPublicacao" name="anoPublicacao" placeholder="Ex: 2024" required>
+                </div>
 
-            <div class="form-group">
-                <label for="quantidadeExemplares">Quantidade de Exemplares:</label>
-                <input type="number" class="form-control" id="quantidadeExemplares" name="quantidadeExemplares" value="1" min="1" required>
+                <div class="form-group">
+                    <label for="quantidadeExemplares">Quantidade de Exemplares:</label>
+                    <input type="number" class="form-control" id="quantidadeExemplares" name="quantidadeExemplares" value="1" min="1" required>
+                </div>
             </div>
 
             <div style="display: flex; gap: 1rem; margin-top: 2rem;">

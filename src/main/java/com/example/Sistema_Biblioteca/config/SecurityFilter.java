@@ -12,7 +12,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-
+import jakarta.servlet.http.Cookie;
+import java.util.Arrays;
 import java.io.IOException;
 
 @Component
@@ -20,7 +21,6 @@ public class SecurityFilter extends OncePerRequestFilter {
 
     @Autowired
     private TokenService tokenService;
-
     @Autowired
     private UsuarioRepository usuarioRepository;
 
@@ -31,7 +31,7 @@ public class SecurityFilter extends OncePerRequestFilter {
         if (token != null) {
             var login = tokenService.validateToken(token);
 
-            if (!login.isEmpty()) { // Se o token for válido
+            if (!login.isEmpty()) {
                 UserDetails usuario = usuarioRepository.findByEmail(login).orElse(null);
 
                 if (usuario != null) {
@@ -44,8 +44,19 @@ public class SecurityFilter extends OncePerRequestFilter {
     }
 
     private String recoverToken(HttpServletRequest request) {
+        // 1. Tenta pegar do Header (Para Postman/Swagger)
         var authHeader = request.getHeader("Authorization");
-        if (authHeader == null) return null;
-        return authHeader.replace("Bearer ", "");
+        if (authHeader != null) return authHeader.replace("Bearer ", "");
+
+        // 2. --- NOVO: Tenta pegar do Cookie (Para Navegador/Thymeleaf) ---
+        if (request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
+                if ("BIBLIOTECA_TOKEN".equals(cookie.getName())) {
+                    return cookie.getValue();
+                }
+            }
+        }
+        
+        return null;
     }
 }

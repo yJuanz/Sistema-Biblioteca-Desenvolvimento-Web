@@ -27,38 +27,33 @@
 
 <main class="container">
     <div class="card">
-        <div style="display: flex; justify-content: between; align-items: center; margin-bottom: 1rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
             <h2><i class="fas fa-calendar-check"></i> Gestão de Reservas</h2>
             <a href="/reservas/nova" class="btn btn-primary">
-                <i class="fas fa-plus"></i> Nova Reserva
+                <i class="fas fa-plus"></i> Nova Reserva (Página)
             </a>
         </div>
 
-        <!-- Filtros -->
+        <div th:if="${param.sucesso}" class="alert alert-success" style="background-color: #d4edda; color: #155724; padding: 1rem; margin-bottom: 1rem; border-radius: 5px;">
+            <i class="fas fa-check-circle"></i> <span th:text="${param.sucesso}"></span>
+        </div>
+        <div th:if="${param.error}" class="alert alert-danger" style="background-color: #f8d7da; color: #721c24; padding: 1rem; margin-bottom: 1rem; border-radius: 5px;">
+            <i class="fas fa-exclamation-triangle"></i> <span th:text="${param.error}"></span>
+        </div>
+
         <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem;">
             <input type="text" class="form-control" placeholder="Buscar por livro..." style="flex: 1; min-width: 200px;">
-            <input type="text" class="form-control" placeholder="Buscar por usuário..." style="flex: 1; min-width: 200px;">
-            <select class="form-control" style="width: 200px;">
-                <option>Todos os Status</option>
-                <option>Ativa</option>
-                <option>Expirada</option>
-                <option>Cancelada</option>
-                <option>Concluída</option>
-            </select>
             <button class="btn btn-primary">
                 <i class="fas fa-search"></i> Buscar
             </button>
         </div>
     </div>
 
-    <!-- Abas -->
     <div style="display: flex; gap: 0; border-bottom: 2px solid #ecf0f1; margin-bottom: 1rem;">
         <button class="tab-btn active" onclick="showTab('ativas')">Reservas Ativas</button>
         <button class="tab-btn" onclick="showTab('expiradas')">Expiradas</button>
-        <button class="tab-btn" onclick="showTab('todas')">Todas as Reservas</button>
     </div>
 
-    <!-- Reservas Ativas -->
     <div class="card tab-content" id="ativas-tab">
         <h3><i class="fas fa-clock"></i> Reservas Ativas</h3>
         <div class="table-container">
@@ -69,38 +64,27 @@
                     <th>Livro</th>
                     <th>Data Reserva</th>
                     <th>Expira em</th>
-                    <th>Prioridade</th>
-                    <th>Ações</th>
+                    <th>Status</th>
                 </tr>
                 </thead>
                 <tbody>
                 <tr th:each="reserva : ${reservasAtivas}">
                     <td th:text="${reserva.usuario.nome}">Ana Pereira</td>
                     <td th:text="${reserva.livro.titulo}">Java para Iniciantes</td>
+                    
                     <td th:text="${#temporals.format(reserva.dataReserva, 'dd/MM/yyyy')}">10/11/2024</td>
+                    
                     <td>
-                                <span th:class="${#temporals.daysUntil(reserva.dataExpiracao) < 2} ? 'status status-emprestado' : 'status status-disponivel'">
-                                    [[${#temporals.daysUntil(reserva.dataExpiracao)}]] dias
-                                </span>
+                        <span class="status status-disponivel"
+                              th:text="${#temporals.format(reserva.dataExpiracao, 'dd/MM/yyyy')}">
+                            17/11/2024
+                        </span>
                     </td>
-                    <td>
-                                <span class="status" th:classappend="${reservaStat.index == 0} ? 'status-ativo' : 'status-disponivel'">
-                                    [[${reservaStat.index + 1}]]ª posição
-                                </span>
-                    </td>
-                    <td>
-                        <div style="display: flex; gap: 0.5rem;">
-                            <button class="btn btn-success btn-sm" onclick="concluirReserva([[${reserva.id}]])">
-                                <i class="fas fa-check"></i> Concluir
-                            </button>
-                            <button class="btn btn-danger btn-sm" onclick="cancelarReserva([[${reserva.id}]])">
-                                <i class="fas fa-times"></i> Cancelar
-                            </button>
-                        </div>
-                    </td>
+                    
+                    <td><span class="status status-ativo">ATIVA</span></td>
                 </tr>
                 <tr th:if="${reservasAtivas == null or reservasAtivas.empty}">
-                    <td colspan="6" style="text-align: center;">
+                    <td colspan="5" style="text-align: center;">
                         <div class="loading">Nenhuma reserva ativa</div>
                     </td>
                 </tr>
@@ -109,7 +93,6 @@
         </div>
     </div>
 
-    <!-- Reservas Expiradas -->
     <div class="card tab-content" id="expiradas-tab" style="display: none;">
         <h3><i class="fas fa-exclamation-triangle"></i> Reservas Expiradas</h3>
         <div class="table-container">
@@ -118,34 +101,21 @@
                 <tr>
                     <th>Usuário</th>
                     <th>Livro</th>
-                    <th>Data Reserva</th>
                     <th>Data Expiração</th>
-                    <th>Dias Expirada</th>
-                    <th>Ações</th>
+                    <th>Status</th>
                 </tr>
                 </thead>
                 <tbody>
                 <tr th:each="reserva : ${reservasExpiradas}">
                     <td th:text="${reserva.usuario.nome}">Ana Pereira</td>
                     <td th:text="${reserva.livro.titulo}">Java para Iniciantes</td>
-                    <td th:text="${#temporals.format(reserva.dataReserva, 'dd/MM/yyyy')}">10/11/2024</td>
+                    
                     <td th:text="${#temporals.format(reserva.dataExpiracao, 'dd/MM/yyyy')}">17/11/2024</td>
-                    <td>
-                                <span class="status status-emprestado">
-                                    [[${#temporals.daysUntil(reserva.dataExpiracao) * -1}]] dias
-                                </span>
-                    </td>
-                    <td>
-                        <button class="btn btn-primary btn-sm" onclick="renovarReserva([[${reserva.id}]])">
-                            <i class="fas fa-redo"></i> Renovar
-                        </button>
-                        <button class="btn btn-danger btn-sm" onclick="cancelarReserva([[${reserva.id}]])">
-                            <i class="fas fa-trash"></i> Excluir
-                        </button>
-                    </td>
+                    
+                    <td><span class="status status-emprestado">EXPIRADA</span></td>
                 </tr>
                 <tr th:if="${reservasExpiradas == null or reservasExpiradas.empty}">
-                    <td colspan="6" style="text-align: center;">
+                    <td colspan="4" style="text-align: center;">
                         <div class="loading">Nenhuma reserva expirada</div>
                     </td>
                 </tr>
@@ -154,26 +124,27 @@
         </div>
     </div>
 
-    <!-- Formulário de Nova Reserva -->
     <div class="card">
-        <h3><i class="fas fa-plus-circle"></i> Nova Reserva</h3>
-        <form id="formReserva">
+        <h3><i class="fas fa-plus-circle"></i> Nova Reserva Rápida</h3>
+        <form action="/reservas/nova" method="post">
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                 <div class="form-group">
-                    <label for="usuario">Usuário:</label>
-                    <select class="form-control" id="usuario" required>
+                    <label for="usuarioId">Usuário:</label>
+                    <select class="form-control" id="usuarioId" name="usuarioId" required>
                         <option value="">Selecione um usuário...</option>
-                        <option th:each="usuario : ${usuarios}" th:value="${usuario.id}" th:text="${usuario.nome + ' - ' + usuario.matricula}">
-                            Ana Pereira - 2024001
+                        <option th:each="usuario : ${usuarios}" 
+                                th:value="${usuario.id}" 
+                                th:text="${usuario.nome + ' - ' + usuario.matricula}">
                         </option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label for="livro">Livro:</label>
-                    <select class="form-control" id="livro" required>
+                    <label for="livroId">Livro:</label>
+                    <select class="form-control" id="livroId" name="livroId" required>
                         <option value="">Selecione um livro...</option>
-                        <option th:each="livro : ${livrosDisponiveis}" th:value="${livro.id}" th:text="${livro.titulo + ' - ' + livro.autores[0].nome}">
-                            Java para Iniciantes - João Silva
+                        <option th:each="livro : ${livros}" 
+                                th:value="${livro.id}" 
+                                th:text="${livro.titulo}">
                         </option>
                     </select>
                 </div>
@@ -182,68 +153,9 @@
                 <button type="submit" class="btn btn-primary">
                     <i class="fas fa-save"></i> Fazer Reserva
                 </button>
-                <button type="reset" class="btn btn-danger">
-                    <i class="fas fa-times"></i> Cancelar
-                </button>
             </div>
         </form>
     </div>
-
-    <!-- Estatísticas de Reservas -->
-    <div class="cards-grid">
-        <div class="stat-card">
-            <i class="fas fa-calendar-check"></i>
-            <span class="stat-number" th:text="${totalReservas ?: '0'}">0</span>
-            <span class="stat-label">Total de Reservas</span>
-        </div>
-        <div class="stat-card">
-            <i class="fas fa-clock"></i>
-            <span class="stat-number" th:text="${reservasAtivasCount ?: '0'}">0</span>
-            <span class="stat-label">Reservas Ativas</span>
-        </div>
-        <div class="stat-card">
-            <i class="fas fa-exclamation-triangle"></i>
-            <span class="stat-number" th:text="${reservasExpiradasCount ?: '0'}">0</span>
-            <span class="stat-label">Reservas Expiradas</span>
-        </div>
-        <div class="stat-card">
-            <i class="fas fa-chart-line"></i>
-            <span class="stat-number" th:text="${livrosMaisReservadosCount ?: '0'}">0</span>
-            <span class="stat-label">Livros Mais Reservados</span>
-        </div>
-    </div>
-    <!-- Cabeçalho com ações -->
-    <div class="card">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-            <div style="display: flex; align-items: center; gap: 1rem;">
-                <a href="/" class="btn btn-secondary">
-                    <i class="fas fa-arrow-left"></i> Voltar
-                </a>
-                <h2 style="margin: 0;"><i class="fas fa-calendar-check"></i> Gestão de Reservas</h2>
-            </div>
-            <a href="/reservas/nova" class="btn btn-primary">
-                <i class="fas fa-plus"></i> Nova Reserva
-            </a>
-        </div>
-
-        <!-- Filtros -->
-        <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem;">
-            <input type="text" class="form-control" placeholder="Buscar por livro..." style="flex: 1; min-width: 200px;">
-            <input type="text" class="form-control" placeholder="Buscar por usuário..." style="flex: 1; min-width: 200px;">
-            <select class="form-control" style="width: 200px;">
-                <option>Todos os Status</option>
-                <option>Ativa</option>
-                <option>Expirada</option>
-                <option>Cancelada</option>
-                <option>Concluída</option>
-            </select>
-            <button class="btn btn-primary">
-                <i class="fas fa-search"></i> Buscar
-            </button>
-        </div>
-    </div>
-
-
 
 </main>
 
@@ -263,108 +175,6 @@
         event.target.classList.add('active');
     }
 
-    function concluirReserva(reservaId) {
-        if (confirm('Concluir esta reserva e realizar empréstimo?')) {
-            fetch('/api/reservas/' + reservaId + '/concluir', {
-                method: 'PUT',
-            })
-            .then(response => {
-                if (response.ok) {
-                    alert('Reserva concluída com sucesso! Empréstimo realizado.');
-                    location.reload();
-                } else {
-                    alert('Erro ao concluir reserva.');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Erro ao concluir reserva.');
-            });
-        }
-    }
-
-    function cancelarReserva(reservaId) {
-        if (confirm('Tem certeza que deseja cancelar esta reserva?')) {
-            fetch('/api/reservas/' + reservaId + '/cancelar', {
-                method: 'PUT',
-            })
-            .then(response => {
-                if (response.ok) {
-                    alert('Reserva cancelada com sucesso!');
-                    location.reload();
-                } else {
-                    alert('Erro ao cancelar reserva.');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Erro ao cancelar reserva.');
-            });
-        }
-    }
-
-    function renovarReserva(reservaId) {
-        if (confirm('Renovar esta reserva por mais 7 dias?')) {
-            fetch('/api/reservas/' + reservaId + '/renovar', {
-                method: 'PUT',
-            })
-            .then(response => {
-                if (response.ok) {
-                    alert('Reserva renovada com sucesso!');
-                    location.reload();
-                } else {
-                    alert('Erro ao renovar reserva.');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Erro ao renovar reserva.');
-            });
-        }
-    }
-
-    // Formulário de nova reserva
-    document.getElementById('formReserva').addEventListener('submit', function(e) {
-        e.preventDefault();
-
-        const usuarioId = document.getElementById('usuario').value;
-        const livroId = document.getElementById('livro').value;
-
-        if (!usuarioId || !livroId) {
-            alert('Por favor, selecione usuário e livro.');
-            return;
-        }
-
-        const reservaData = {
-            usuarioId: parseInt(usuarioId),
-            livroId: parseInt(livroId),
-            dataExpiracao: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 dias
-        };
-
-        fetch('/api/reservas', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(reservaData)
-        })
-        .then(response => {
-            if (response.ok) {
-                alert('Reserva criada com sucesso!');
-                location.reload();
-            } else {
-                response.text().then(text => {
-                    alert('Erro: ' + text);
-                });
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Erro ao criar reserva.');
-        });
-    });
-
-    // Estilo para abas
     const style = document.createElement('style');
     style.textContent = `
         .tab-btn {
@@ -377,15 +187,26 @@
             color: #7f8c8d;
             transition: all 0.3s;
         }
-        .tab-btn:hover {
-            color: #3498db;
-        }
-        .tab-btn.active {
-            color: #3498db;
-            border-bottom-color: #3498db;
-        }
+        .tab-btn:hover { color: #3498db; }
+        .tab-btn.active { color: #3498db; border-bottom-color: #3498db; }
     `;
     document.head.appendChild(style);
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const sucesso = urlParams.get('sucesso');
+        const erro = urlParams.get('error');
+
+        if (sucesso) {
+            alert('✅ ' + decodeURIComponent(sucesso));
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+
+        if (erro) {
+            alert('❌ ' + decodeURIComponent(erro));
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+    });
 </script>
 </body>
 </html>
